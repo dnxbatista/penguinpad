@@ -1,0 +1,134 @@
+#include "ui.h"
+#include "controller.h"
+#include <imgui.h>
+#include <cmath>
+
+void UI::draw(bool& showDemo, Controller* controller)
+{
+	ImGui::SetNextWindowPos(ImVec2(0, 0));
+	ImGui::SetNextWindowSize(ImGui::GetIO().DisplaySize);
+
+	ImGuiWindowFlags window_flags = 0;
+	window_flags |= ImGuiWindowFlags_NoTitleBar;
+	window_flags |= ImGuiWindowFlags_NoResize;
+	window_flags |= ImGuiWindowFlags_NoMove;
+	window_flags |= ImGuiWindowFlags_NoCollapse;
+	window_flags |= ImGuiWindowFlags_NoBringToFrontOnFocus;
+
+	ImGui::Begin("penguinpad", nullptr, window_flags);
+	// Draw --------------
+	if (showDemo)
+	{
+		ImGui::ShowDemoWindow(&showDemo);
+	}
+
+	contentManager(*controller);
+	// End Draw --------------
+	ImGui::End();
+}
+
+void UI::contentManager(Controller& controller)
+{
+    GamepadData newData = controller.getData();
+	if (newData.connected)
+	{
+		drawContent(newData);
+	}
+	else {
+		drawSearchContent();
+	}
+}
+
+void UI::drawContent(GamepadData& gamepadData)
+{
+    float windowWidth = ImGui::GetWindowSize().x;
+    ImDrawList* drawList = ImGui::GetWindowDrawList();
+    ImVec2 p = ImGui::GetCursorScreenPos();
+
+    const char* title = gamepadData.name.c_str();
+    ImGui::SetCursorPosX((windowWidth - ImGui::CalcTextSize(title).x) * 0.5f);
+    ImGui::TextColored(ImVec4(0.4f, 0.7f, 1.0f, 1.0f), title);
+    ImGui::Separator();
+
+    float contentHeight = 450.0f;
+    float availHeight = ImGui::GetContentRegionAvail().y;
+    ImGui::SetCursorPosY(ImGui::GetCursorPosY() + (availHeight - contentHeight) * 0.5f);
+
+    ImGui::BeginGroup();
+    {
+        // --- (LAMBDAS) ---
+        auto drawCircleBtn = [&](ImVec2 pos, const char* label, int btnIdx, ImColor activeColor) {
+            bool active = gamepadData.buttons[btnIdx];
+            drawList->AddCircleFilled(pos, 15.0f, active ? activeColor : ImColor(45, 45, 45));
+            drawList->AddText(ImVec2(pos.x - 5, pos.y - 7), ImColor(255, 255, 255), label);
+            };
+
+        auto drawRectBtn = [&](ImVec2 pos, ImVec2 size, const char* label, int btnIdx) {
+            bool active = gamepadData.buttons[btnIdx];
+            drawList->AddRectFilled(pos, ImVec2(pos.x + size.x, pos.y + size.y), active ? ImColor(0, 150, 255) : ImColor(45, 45, 45), 5.0f);
+            drawList->AddText(ImVec2(pos.x + 5, pos.y + 5), ImColor(255, 255, 255), label);
+            };
+
+        drawRectBtn(ImVec2(p.x + windowWidth * 0.2f, p.y + 40), ImVec2(80, 30), "L1", SDL_GAMEPAD_BUTTON_LEFT_SHOULDER);
+        drawRectBtn(ImVec2(p.x + windowWidth * 0.7f, p.y + 40), ImVec2(80, 30), "R1", SDL_GAMEPAD_BUTTON_RIGHT_SHOULDER);
+
+        ImGui::SetCursorScreenPos(ImVec2(p.x + windowWidth * 0.2f, p.y + 80));
+        ImGui::ProgressBar(gamepadData.leftTrigger, ImVec2(80, 10), "");
+        ImGui::SetCursorScreenPos(ImVec2(p.x + windowWidth * 0.7f, p.y + 80));
+        ImGui::ProgressBar(gamepadData.rightTrigger, ImVec2(80, 10), "");
+
+        float centerX = p.x + windowWidth * 0.5f;
+        drawCircleBtn(ImVec2(centerX - 40, p.y + 120), "<", SDL_GAMEPAD_BUTTON_BACK, ImColor(150, 150, 150));
+        drawCircleBtn(ImVec2(centerX, p.y + 120), "G", SDL_GAMEPAD_BUTTON_GUIDE, ImColor(255, 200, 0));
+        drawCircleBtn(ImVec2(centerX + 40, p.y + 120), ">", SDL_GAMEPAD_BUTTON_START, ImColor(150, 150, 150));
+
+        auto drawStick = [&](ImVec2 center, float x, float y, const char* label, int stickBtnIdx) {
+            float radius = 45.0f;
+            bool isPressed = gamepadData.buttons[stickBtnIdx];
+            drawList->AddCircleFilled(center, radius, isPressed ? ImColor(70, 70, 70) : ImColor(40, 40, 40));
+            drawList->AddCircle(center, radius, ImColor(100, 100, 100), 32, 2.0f);
+
+            ImVec2 stickPos = ImVec2(center.x + (x * radius * 0.7f), center.y + (y * radius * 0.7f));
+            drawList->AddCircleFilled(stickPos, 12.0f, isPressed ? ImColor(0, 255, 255) : ImColor(0, 150, 255));
+            drawList->AddText(ImVec2(center.x - 25, center.y + radius + 10), ImColor(180, 180, 180), label);
+            };
+
+        drawStick(ImVec2(p.x + windowWidth * 0.3f, p.y + 220), gamepadData.leftStick[0], gamepadData.leftStick[1], "L-Stick", SDL_GAMEPAD_BUTTON_LEFT_STICK);
+        drawStick(ImVec2(p.x + windowWidth * 0.7f, p.y + 220), gamepadData.rightStick[0], gamepadData.rightStick[1], "R-Stick", SDL_GAMEPAD_BUTTON_RIGHT_STICK);
+
+        float dpadX = p.x + windowWidth * 0.15f;
+        float dpadY = p.y + 350;
+        drawCircleBtn(ImVec2(dpadX, dpadY - 30), "U", SDL_GAMEPAD_BUTTON_DPAD_UP, ImColor(120, 120, 120));
+        drawCircleBtn(ImVec2(dpadX, dpadY + 30), "D", SDL_GAMEPAD_BUTTON_DPAD_DOWN, ImColor(120, 120, 120));
+        drawCircleBtn(ImVec2(dpadX - 30, dpadY), "L", SDL_GAMEPAD_BUTTON_DPAD_LEFT, ImColor(120, 120, 120));
+        drawCircleBtn(ImVec2(dpadX + 30, dpadY), "R", SDL_GAMEPAD_BUTTON_DPAD_RIGHT, ImColor(120, 120, 120));
+
+        float faceX = windowWidth * 0.85f;
+        float faceY = p.y + 350;
+        drawCircleBtn(ImVec2(faceX, faceY - 30), "Y", SDL_GAMEPAD_BUTTON_NORTH, ImColor(255, 255, 0));
+        drawCircleBtn(ImVec2(faceX, faceY + 30), "A", SDL_GAMEPAD_BUTTON_SOUTH, ImColor(0, 255, 0));
+        drawCircleBtn(ImVec2(faceX - 30, faceY), "X", SDL_GAMEPAD_BUTTON_WEST, ImColor(0, 150, 255));
+        drawCircleBtn(ImVec2(faceX + 30, faceY), "B", SDL_GAMEPAD_BUTTON_EAST, ImColor(255, 0, 0));
+    }
+    ImGui::EndGroup();
+
+    ImGui::SetCursorPosY(p.y + 480);
+    ImGui::SeparatorText("Botoes Extra / Diagnostico");
+    ImGui::BeginChild("ExtraBtns", ImVec2(0, 100), true);
+    for (int i = 0; i < SDL_GAMEPAD_BUTTON_COUNT; i++) {
+        if (gamepadData.buttons[i]) {
+            ImGui::Text("ID [%d] Pressionado", i);
+            ImGui::SameLine();
+        }
+    }
+    ImGui::EndChild();
+}
+
+void UI::drawSearchContent()
+{
+	ImVec2 availableSpace = ImGui::GetContentRegionAvail();
+
+	ImGui::SetCursorPosX((availableSpace.x - 500) * 0.5f);
+	ImGui::SetCursorPosY(ImGui::GetCursorPosY() + (availableSpace.y - 35.0f) * 0.5f);
+	ImGui::ProgressBar(-1.0 * (float)ImGui::GetTime(), ImVec2(500.0f,35.0f), "Searching Controllers...");
+}
