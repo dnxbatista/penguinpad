@@ -1,9 +1,9 @@
 #include "ui.h"
-#include "controller.h"
+#include "gamepad.h"
 #include <imgui.h>
 #include <cmath>
 
-void UI::draw(bool& showDemo, Controller* controller)
+void UI::draw(bool& showDemo, Gamepad* gamepad)
 {
 	ImGui::SetNextWindowPos(ImVec2(0, 0));
 	ImGui::SetNextWindowSize(ImGui::GetIO().DisplaySize);
@@ -22,14 +22,46 @@ void UI::draw(bool& showDemo, Controller* controller)
 		ImGui::ShowDemoWindow(&showDemo);
 	}
 
-	contentManager(*controller);
+	contentManager(*gamepad);
 	// End Draw --------------
 	ImGui::End();
 }
 
-void UI::contentManager(Controller& controller)
+void UI::applyModernTheme()
 {
-    GamepadData newData = controller.getData();
+    ImGuiStyle& style = ImGui::GetStyle();
+	ImVec4* colors = style.Colors;
+
+	style.WindowRounding = 6.0f;       
+	style.FrameRounding = 4.0f;        
+	style.PopupRounding = 4.0f;
+	style.ScrollbarRounding = 9.0f;
+	style.GrabRounding = 4.0f;
+	style.WindowPadding = ImVec2(15, 15);
+	style.FramePadding = ImVec2(5, 5);
+	style.ItemSpacing = ImVec2(10, 8);
+
+	colors[ImGuiCol_Text] = ImVec4(0.95f, 0.95f, 0.95f, 1.00f);
+	colors[ImGuiCol_WindowBg] = ImVec4(0.09f, 0.09f, 0.10f, 1.00f); 
+	colors[ImGuiCol_Header] = ImVec4(0.20f, 0.25f, 0.29f, 1.00f);
+	colors[ImGuiCol_HeaderHovered] = ImVec4(0.26f, 0.59f, 0.98f, 0.80f);
+
+	colors[ImGuiCol_Button] = ImVec4(0.20f, 0.20f, 0.22f, 1.00f);
+	colors[ImGuiCol_ButtonHovered] = ImVec4(0.28f, 0.28f, 0.30f, 1.00f);
+	colors[ImGuiCol_ButtonActive] = ImVec4(0.06f, 0.53f, 0.98f, 1.00f);
+
+	colors[ImGuiCol_FrameBg] = ImVec4(0.16f, 0.16f, 0.17f, 1.00f);
+	colors[ImGuiCol_FrameBgHovered] = ImVec4(0.24f, 0.24f, 0.25f, 1.00f);
+	colors[ImGuiCol_FrameBgActive] = ImVec4(0.28f, 0.28f, 0.30f, 1.00f);
+
+	colors[ImGuiCol_Tab] = ImVec4(0.11f, 0.11f, 0.12f, 1.00f);
+	colors[ImGuiCol_TabHovered] = ImVec4(0.26f, 0.59f, 0.98f, 0.80f);
+	colors[ImGuiCol_TabActive] = ImVec4(0.20f, 0.20f, 0.22f, 1.00f);
+}
+
+void UI::contentManager(Gamepad& gamepad)
+{
+    GamepadData newData = gamepad.getData();
 	if (newData.connected)
 	{
 		drawContent(newData);
@@ -40,10 +72,11 @@ void UI::contentManager(Controller& controller)
 }
 
 void UI::drawContent(GamepadData& gamepadData)
-{
+{   
+    // Header
     float windowWidth = ImGui::GetWindowSize().x;
     ImDrawList* drawList = ImGui::GetWindowDrawList();
-    ImVec2 p = ImGui::GetCursorScreenPos();
+    ImVec2 pos = ImGui::GetCursorScreenPos();
 
     const char* title = gamepadData.name.c_str();
     ImGui::SetCursorPosX((windowWidth - ImGui::CalcTextSize(title).x) * 0.5f);
@@ -54,6 +87,7 @@ void UI::drawContent(GamepadData& gamepadData)
     float availHeight = ImGui::GetContentRegionAvail().y;
     ImGui::SetCursorPosY(ImGui::GetCursorPosY() + (availHeight - contentHeight) * 0.5f);
 
+    // Gamepad UI
     ImGui::BeginGroup();
     {
         // --- (LAMBDAS) ---
@@ -69,18 +103,20 @@ void UI::drawContent(GamepadData& gamepadData)
             drawList->AddText(ImVec2(pos.x + 5, pos.y + 5), ImColor(255, 255, 255), label);
             };
 
-        drawRectBtn(ImVec2(p.x + windowWidth * 0.2f, p.y + 40), ImVec2(80, 30), "L1", SDL_GAMEPAD_BUTTON_LEFT_SHOULDER);
-        drawRectBtn(ImVec2(p.x + windowWidth * 0.7f, p.y + 40), ImVec2(80, 30), "R1", SDL_GAMEPAD_BUTTON_RIGHT_SHOULDER);
+        drawRectBtn(ImVec2(pos.x + windowWidth * 0.2f, pos.y + 40), ImVec2(80, 30), "L1", SDL_GAMEPAD_BUTTON_LEFT_SHOULDER);
+        drawRectBtn(ImVec2(pos.x + windowWidth * 0.7f, pos.y + 40), ImVec2(80, 30), "R1", SDL_GAMEPAD_BUTTON_RIGHT_SHOULDER);
 
-        ImGui::SetCursorScreenPos(ImVec2(p.x + windowWidth * 0.2f, p.y + 80));
-        ImGui::ProgressBar(gamepadData.leftTrigger, ImVec2(80, 10), "");
-        ImGui::SetCursorScreenPos(ImVec2(p.x + windowWidth * 0.7f, p.y + 80));
-        ImGui::ProgressBar(gamepadData.rightTrigger, ImVec2(80, 10), "");
+        ImGui::SetCursorScreenPos(ImVec2(pos.x + windowWidth * 0.2f, pos.y + 80));
+        ImGui::ProgressBar(gamepadData.leftTrigger, ImVec2(80, 20), "L2");
+        drawList->AddText(ImVec2(pos.x + windowWidth * 0.2f, pos.y + 110), ImColor(255, 255, 255), "Test");
+        ImGui::SetCursorScreenPos(ImVec2(pos.x + windowWidth * 0.7f, pos.y + 80));
+        ImGui::ProgressBar(gamepadData.rightTrigger, ImVec2(80, 20), "R2");
+        drawList->AddText(ImVec2(pos.x + windowWidth * 0.7f, pos.y + 110), ImColor(255, 255, 255), "Test");
 
-        float centerX = p.x + windowWidth * 0.5f;
-        drawCircleBtn(ImVec2(centerX - 40, p.y + 120), "<", SDL_GAMEPAD_BUTTON_BACK, ImColor(150, 150, 150));
-        drawCircleBtn(ImVec2(centerX, p.y + 120), "G", SDL_GAMEPAD_BUTTON_GUIDE, ImColor(255, 200, 0));
-        drawCircleBtn(ImVec2(centerX + 40, p.y + 120), ">", SDL_GAMEPAD_BUTTON_START, ImColor(150, 150, 150));
+        float centerX = pos.x + windowWidth * 0.5f;
+        drawCircleBtn(ImVec2(centerX - 40, pos.y + 120), "<", SDL_GAMEPAD_BUTTON_BACK, ImColor(150, 150, 150));
+        drawRectBtn(ImVec2(centerX - 15, pos.y + (120- 15)), ImVec2(30, 30), "G", SDL_GAMEPAD_BUTTON_GUIDE);
+        drawCircleBtn(ImVec2(centerX + 40, pos.y + 120), ">", SDL_GAMEPAD_BUTTON_START, ImColor(150, 150, 150));
 
         auto drawStick = [&](ImVec2 center, float x, float y, const char* label, int stickBtnIdx) {
             float radius = 45.0f;
@@ -93,18 +129,18 @@ void UI::drawContent(GamepadData& gamepadData)
             drawList->AddText(ImVec2(center.x - 25, center.y + radius + 10), ImColor(180, 180, 180), label);
             };
 
-        drawStick(ImVec2(p.x + windowWidth * 0.3f, p.y + 220), gamepadData.leftStick[0], gamepadData.leftStick[1], "L-Stick", SDL_GAMEPAD_BUTTON_LEFT_STICK);
-        drawStick(ImVec2(p.x + windowWidth * 0.7f, p.y + 220), gamepadData.rightStick[0], gamepadData.rightStick[1], "R-Stick", SDL_GAMEPAD_BUTTON_RIGHT_STICK);
+        drawStick(ImVec2(pos.x + windowWidth * 0.3f, pos.y + 220), gamepadData.leftStick[0], gamepadData.leftStick[1], "L-Stick", SDL_GAMEPAD_BUTTON_LEFT_STICK);
+        drawStick(ImVec2(pos.x + windowWidth * 0.7f, pos.y + 220), gamepadData.rightStick[0], gamepadData.rightStick[1], "R-Stick", SDL_GAMEPAD_BUTTON_RIGHT_STICK);
 
-        float dpadX = p.x + windowWidth * 0.15f;
-        float dpadY = p.y + 350;
+        float dpadX = pos.x + windowWidth * 0.15f;
+        float dpadY = pos.y + 350;
         drawCircleBtn(ImVec2(dpadX, dpadY - 30), "U", SDL_GAMEPAD_BUTTON_DPAD_UP, ImColor(120, 120, 120));
         drawCircleBtn(ImVec2(dpadX, dpadY + 30), "D", SDL_GAMEPAD_BUTTON_DPAD_DOWN, ImColor(120, 120, 120));
         drawCircleBtn(ImVec2(dpadX - 30, dpadY), "L", SDL_GAMEPAD_BUTTON_DPAD_LEFT, ImColor(120, 120, 120));
         drawCircleBtn(ImVec2(dpadX + 30, dpadY), "R", SDL_GAMEPAD_BUTTON_DPAD_RIGHT, ImColor(120, 120, 120));
 
         float faceX = windowWidth * 0.85f;
-        float faceY = p.y + 350;
+        float faceY = pos.y + 350;
         drawCircleBtn(ImVec2(faceX, faceY - 30), "Y", SDL_GAMEPAD_BUTTON_NORTH, ImColor(255, 255, 0));
         drawCircleBtn(ImVec2(faceX, faceY + 30), "A", SDL_GAMEPAD_BUTTON_SOUTH, ImColor(0, 255, 0));
         drawCircleBtn(ImVec2(faceX - 30, faceY), "X", SDL_GAMEPAD_BUTTON_WEST, ImColor(0, 150, 255));
@@ -112,12 +148,13 @@ void UI::drawContent(GamepadData& gamepadData)
     }
     ImGui::EndGroup();
 
-    ImGui::SetCursorPosY(p.y + 480);
-    ImGui::SeparatorText("Botoes Extra / Diagnostico");
+    // Buttons Diagnosis
+    ImGui::SetCursorPosY(pos.y + 480);
+    ImGui::SeparatorText("Extras Buttons / Diagnosis");
     ImGui::BeginChild("ExtraBtns", ImVec2(0, 100), true);
     for (int i = 0; i < SDL_GAMEPAD_BUTTON_COUNT; i++) {
         if (gamepadData.buttons[i]) {
-            ImGui::Text("ID [%d] Pressionado", i);
+            ImGui::Text("ID [%d] Pressed", i);
             ImGui::SameLine();
         }
     }
@@ -130,5 +167,5 @@ void UI::drawSearchContent()
 
 	ImGui::SetCursorPosX((availableSpace.x - 500) * 0.5f);
 	ImGui::SetCursorPosY(ImGui::GetCursorPosY() + (availableSpace.y - 35.0f) * 0.5f);
-	ImGui::ProgressBar(-1.0 * (float)ImGui::GetTime(), ImVec2(500.0f,35.0f), "Searching Controllers...");
+	ImGui::ProgressBar(-1.0 * (float)ImGui::GetTime(), ImVec2(500.0f,35.0f), "Searching Gamepad...");
 }

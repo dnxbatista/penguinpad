@@ -16,10 +16,10 @@ struct GamepadData {
 	float rightTrigger = 0.0f;
 };
 
-class Controller {
+class Gamepad {
 public:
-	Controller();
-	~Controller();
+	Gamepad();
+	~Gamepad();
 
 	void update();
 	void handleEvent(const SDL_Event& event);

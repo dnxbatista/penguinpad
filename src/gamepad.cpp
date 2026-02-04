@@ -1,17 +1,17 @@
-#include "controller.h"
+#include "gamepad.h"
 #include <iostream>
 
-Controller::Controller()
+Gamepad::Gamepad()
 {
 	openFirstAvailable();
 }
 
-Controller::~Controller()
+Gamepad::~Gamepad()
 {
 	close();
 }
 
-void Controller::update()
+void Gamepad::update()
 {
 	SDL_UpdateGamepads();
 	if (!m_gamepad) return;
@@ -29,7 +29,7 @@ void Controller::update()
 	m_data.rightTrigger = (float)SDL_GetGamepadAxis(m_gamepad, SDL_GAMEPAD_AXIS_RIGHT_TRIGGER) / 32767.0f;
 }
 
-void Controller::handleEvent(const SDL_Event& event)
+void Gamepad::handleEvent(const SDL_Event& event)
 {
 	if (event.type == SDL_EVENT_GAMEPAD_ADDED) {
 		if (!m_gamepad) openFirstAvailable();
@@ -41,7 +41,7 @@ void Controller::handleEvent(const SDL_Event& event)
 	}
 }
 
-void Controller::openFirstAvailable()
+void Gamepad::openFirstAvailable()
 {
 	int count;
 	SDL_JoystickID* joysticks = SDL_GetGamepads(&count);
@@ -57,7 +57,7 @@ void Controller::openFirstAvailable()
 	SDL_free(joysticks);
 }
 
-void Controller::close()
+void Gamepad::close()
 {
 	if (m_gamepad) {
 		SDL_CloseGamepad(m_gamepad);
@@ -67,7 +67,7 @@ void Controller::close()
 	}
 }
 
-float Controller::normalizeAxis(Sint16 value)
+float Gamepad::normalizeAxis(Sint16 value)
 {
 	// MAYBE ADD A DEADZONE FUNCTION TOO...
 	float normalized = (float)value / 32767.0f;
