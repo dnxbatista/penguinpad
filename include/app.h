@@ -13,7 +13,6 @@ public:
 	void run();
 
 private:
-	void applyModernTheme();
 	void processEvents();
 	void update();
 	void render();

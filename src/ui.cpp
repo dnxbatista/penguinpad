@@ -27,6 +27,38 @@ void UI::draw(bool& showDemo, Gamepad* gamepad)
 	ImGui::End();
 }
 
+void UI::applyModernTheme()
+{
+    ImGuiStyle& style = ImGui::GetStyle();
+	ImVec4* colors = style.Colors;
+
+	style.WindowRounding = 6.0f;       
+	style.FrameRounding = 4.0f;        
+	style.PopupRounding = 4.0f;
+	style.ScrollbarRounding = 9.0f;
+	style.GrabRounding = 4.0f;
+	style.WindowPadding = ImVec2(15, 15);
+	style.FramePadding = ImVec2(5, 5);
+	style.ItemSpacing = ImVec2(10, 8);
+
+	colors[ImGuiCol_Text] = ImVec4(0.95f, 0.95f, 0.95f, 1.00f);
+	colors[ImGuiCol_WindowBg] = ImVec4(0.09f, 0.09f, 0.10f, 1.00f); 
+	colors[ImGuiCol_Header] = ImVec4(0.20f, 0.25f, 0.29f, 1.00f);
+	colors[ImGuiCol_HeaderHovered] = ImVec4(0.26f, 0.59f, 0.98f, 0.80f);
+
+	colors[ImGuiCol_Button] = ImVec4(0.20f, 0.20f, 0.22f, 1.00f);
+	colors[ImGuiCol_ButtonHovered] = ImVec4(0.28f, 0.28f, 0.30f, 1.00f);
+	colors[ImGuiCol_ButtonActive] = ImVec4(0.06f, 0.53f, 0.98f, 1.00f);
+
+	colors[ImGuiCol_FrameBg] = ImVec4(0.16f, 0.16f, 0.17f, 1.00f);
+	colors[ImGuiCol_FrameBgHovered] = ImVec4(0.24f, 0.24f, 0.25f, 1.00f);
+	colors[ImGuiCol_FrameBgActive] = ImVec4(0.28f, 0.28f, 0.30f, 1.00f);
+
+	colors[ImGuiCol_Tab] = ImVec4(0.11f, 0.11f, 0.12f, 1.00f);
+	colors[ImGuiCol_TabHovered] = ImVec4(0.26f, 0.59f, 0.98f, 0.80f);
+	colors[ImGuiCol_TabActive] = ImVec4(0.20f, 0.20f, 0.22f, 1.00f);
+}
+
 void UI::contentManager(Gamepad& gamepad)
 {
     GamepadData newData = gamepad.getData();
