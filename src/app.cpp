@@ -96,7 +96,7 @@ void App::processEvents()
 	SDL_Event event;
 	while (SDL_PollEvent(&event))
 	{
-		m_controller.handleEvent(event);
+		m_gamepad.handleEvent(event);
 		ImGui_ImplSDL3_ProcessEvent(&event);
 
 		if (event.type == SDL_EVENT_QUIT)
@@ -115,7 +115,7 @@ void App::processEvents()
 
 void App::update()
 {
-	m_controller.update();
+	m_gamepad.update();
 }
 
 void App::render()
@@ -124,7 +124,7 @@ void App::render()
 	ImGui_ImplSDL3_NewFrame();
 	ImGui::NewFrame();
 
-	m_ui.draw(m_showDemo, &m_controller);
+	m_ui.draw(m_showDemo, &m_gamepad);
 
 	SDL_SetRenderDrawColor(m_renderer, 20, 20, 20, 255);
 	SDL_RenderClear(m_renderer);

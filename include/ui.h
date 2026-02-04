@@ -1,11 +1,11 @@
 #pragma once
-#include "controller.h"
+#include "gamepad.h"
 class UI
 {
     public:
-        void draw(bool& showDemo, Controller* controller);
+        void draw(bool& showDemo, Gamepad* gamepad);
     private:
-        void contentManager(Controller& controller);
+        void contentManager(Gamepad& gamepad);
         void drawContent(GamepadData& gamepadData); // Main Content
         void drawSearchContent(); // Searching Content
 

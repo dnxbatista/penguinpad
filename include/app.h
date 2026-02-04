@@ -1,6 +1,6 @@
 #pragma once
 #include "ui.h"
-#include "controller.h"
+#include "gamepad.h"
 #include <SDL3/SDL.h>
 #include <string>
 
@@ -27,7 +27,7 @@ private:
 
 	// External References
 	UI m_ui;
-	Controller m_controller;
+	Gamepad m_gamepad;
 
 	// Debug
 	bool m_showDemo = false;

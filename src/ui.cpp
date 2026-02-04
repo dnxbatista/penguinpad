@@ -1,9 +1,9 @@
 #include "ui.h"
-#include "controller.h"
+#include "gamepad.h"
 #include <imgui.h>
 #include <cmath>
 
-void UI::draw(bool& showDemo, Controller* controller)
+void UI::draw(bool& showDemo, Gamepad* gamepad)
 {
 	ImGui::SetNextWindowPos(ImVec2(0, 0));
 	ImGui::SetNextWindowSize(ImGui::GetIO().DisplaySize);
@@ -22,14 +22,14 @@ void UI::draw(bool& showDemo, Controller* controller)
 		ImGui::ShowDemoWindow(&showDemo);
 	}
 
-	contentManager(*controller);
+	contentManager(*gamepad);
 	// End Draw --------------
 	ImGui::End();
 }
 
-void UI::contentManager(Controller& controller)
+void UI::contentManager(Gamepad& gamepad)
 {
-    GamepadData newData = controller.getData();
+    GamepadData newData = gamepad.getData();
 	if (newData.connected)
 	{
 		drawContent(newData);
@@ -130,5 +130,5 @@ void UI::drawSearchContent()
 
 	ImGui::SetCursorPosX((availableSpace.x - 500) * 0.5f);
 	ImGui::SetCursorPosY(ImGui::GetCursorPosY() + (availableSpace.y - 35.0f) * 0.5f);
-	ImGui::ProgressBar(-1.0 * (float)ImGui::GetTime(), ImVec2(500.0f,35.0f), "Searching Controllers...");
+	ImGui::ProgressBar(-1.0 * (float)ImGui::GetTime(), ImVec2(500.0f,35.0f), "Searching Gamepad...");
 }
