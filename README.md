@@ -15,15 +15,27 @@ Ensure you have the following installed on your system:
    
 ### Compilation
 1. Clone the repository:
+
 ``git clone https://github.com/dnxbatista/penguinpad``
+
 ``cd penguinpad``
 
-2. Configure and build
-``cmake ..``
-``cmake --build.``
+2. Make a build dir
 
-3. Run the application
+``mkdir build``
+
+``cd build``
+
+3. Configure and build
+
+``cmake ..``
+
+``cmake --build``
+
+4. Run the application
+
 ``./penguinpad``
+
 ---
 ## Contributing
 If you want <3
