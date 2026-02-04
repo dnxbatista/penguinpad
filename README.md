@@ -30,11 +30,11 @@ Ensure you have the following installed on your system:
 
 ``cmake ..``
 
-``cmake --build``
+``cmake --build .``
 
-4. Run the application
+4. Run the .exe file in
 
-``./penguinpad``
+``penguinpad/build/Debug/penguinpad.exe``
 
 ---
 ## Contributing
