@@ -14,28 +14,29 @@ Gamepad::~Gamepad()
 void Gamepad::update()
 {
 	SDL_UpdateGamepads();
-	if (!m_gamepad) return;
+	if (!m_SDLgamepad) return;
 
 	for (int i = 0; i < SDL_GAMEPAD_BUTTON_COUNT; ++i) {
-		m_data.buttons[i] = SDL_GetGamepadButton(m_gamepad, (SDL_GamepadButton)i);
+		m_data.buttons[i] = SDL_GetGamepadButton(m_SDLgamepad, (SDL_GamepadButton)i);
 	}
 
-	m_data.leftStick[0] = normalizeAxis(SDL_GetGamepadAxis(m_gamepad, SDL_GAMEPAD_AXIS_LEFTX));
-	m_data.leftStick[1] = normalizeAxis(SDL_GetGamepadAxis(m_gamepad, SDL_GAMEPAD_AXIS_LEFTY));
-	m_data.rightStick[0] = normalizeAxis(SDL_GetGamepadAxis(m_gamepad, SDL_GAMEPAD_AXIS_RIGHTX));
-	m_data.rightStick[1] = normalizeAxis(SDL_GetGamepadAxis(m_gamepad, SDL_GAMEPAD_AXIS_RIGHTY));
+	m_data.leftStick[0] = normalizeAxis(SDL_GetGamepadAxis(m_SDLgamepad, SDL_GAMEPAD_AXIS_LEFTX));
+	m_data.leftStick[1] = normalizeAxis(SDL_GetGamepadAxis(m_SDLgamepad, SDL_GAMEPAD_AXIS_LEFTY));
+	m_data.rightStick[0] = normalizeAxis(SDL_GetGamepadAxis(m_SDLgamepad, SDL_GAMEPAD_AXIS_RIGHTX));
+	m_data.rightStick[1] = normalizeAxis(SDL_GetGamepadAxis(m_SDLgamepad, SDL_GAMEPAD_AXIS_RIGHTY));
 
-	m_data.leftTrigger = (float)SDL_GetGamepadAxis(m_gamepad, SDL_GAMEPAD_AXIS_LEFT_TRIGGER) / 32767.0f;
-	m_data.rightTrigger = (float)SDL_GetGamepadAxis(m_gamepad, SDL_GAMEPAD_AXIS_RIGHT_TRIGGER) / 32767.0f;
+	m_data.leftTrigger = normalizeAxis(SDL_GetGamepadAxis(m_SDLgamepad, SDL_GAMEPAD_AXIS_LEFT_TRIGGER));
+	m_data.rightTrigger = normalizeAxis(SDL_GetGamepadAxis(m_SDLgamepad, SDL_GAMEPAD_AXIS_RIGHT_TRIGGER));
 }
 
 void Gamepad::handleEvent(const SDL_Event& event)
 {
+	// Gamepad Events
 	if (event.type == SDL_EVENT_GAMEPAD_ADDED) {
-		if (!m_gamepad) openFirstAvailable();
+		if (!m_SDLgamepad) openFirstAvailable();
 	}
 	else if (event.type == SDL_EVENT_GAMEPAD_REMOVED) {
-		if (m_gamepad && event.gdevice.which == SDL_GetGamepadID(m_gamepad)) {
+		if (m_SDLgamepad && event.gdevice.which == SDL_GetGamepadID(m_SDLgamepad)) {
 			close();
 		}
 	}
@@ -48,10 +49,11 @@ void Gamepad::openFirstAvailable()
 
 	if (count > 0) {
 
-		m_gamepad = SDL_OpenGamepad(joysticks[0]);
-		if (m_gamepad) {
+		m_SDLgamepad = SDL_OpenGamepad(joysticks[0]);
+		if (m_SDLgamepad) {
 			m_data.connected = true;
-			m_data.name = SDL_GetGamepadName(m_gamepad);
+			m_data.name = SDL_GetGamepadName(m_SDLgamepad);
+			m_data.type = SDL_GetGamepadTypeForID(joysticks[0]);
 		}
 	}
 	SDL_free(joysticks);
@@ -59,11 +61,12 @@ void Gamepad::openFirstAvailable()
 
 void Gamepad::close()
 {
-	if (m_gamepad) {
-		SDL_CloseGamepad(m_gamepad);
-		m_gamepad = nullptr;
+	if (m_SDLgamepad) {
+		SDL_CloseGamepad(m_SDLgamepad);
+		m_SDLgamepad = nullptr;
 		m_data.connected = false;
 		m_data.name = "Unknown";
+		m_data.type = SDL_GAMEPAD_TYPE_UNKNOWN;
 	}
 }
 

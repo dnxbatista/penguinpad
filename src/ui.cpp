@@ -61,10 +61,10 @@ void UI::applyModernTheme()
 
 void UI::contentManager(Gamepad& gamepad)
 {
-    GamepadData newData = gamepad.getData();
-	if (newData.connected)
+    GamepadData gamepadData = gamepad.getData();
+	if (gamepadData.connected)
 	{
-		drawContent(newData);
+		drawContent(gamepadData);
 	}
 	else {
 		drawSearchContent();

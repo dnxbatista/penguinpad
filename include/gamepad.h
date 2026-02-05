@@ -6,6 +6,7 @@
 struct GamepadData {
 	bool connected = false;
 	std::string name = "None";
+	SDL_GamepadType type = SDL_GAMEPAD_TYPE_UNKNOWN;
 
 	bool buttons[SDL_GAMEPAD_BUTTON_COUNT] = { false };
 
@@ -26,7 +27,7 @@ public:
 
 	const GamepadData& getData() const { return m_data; }
 private:
-	SDL_Gamepad* m_gamepad = nullptr;
+	SDL_Gamepad* m_SDLgamepad = nullptr;
 	GamepadData m_data;
 
 	void openFirstAvailable();
