@@ -3,6 +3,8 @@
 #include <imgui.h>
 #include <cmath>
 
+std::string getGamepadType(SDL_GamepadType gamepadType);
+
 void UI::draw(bool& showDemo, Gamepad* gamepad)
 {
 	ImGui::SetNextWindowPos(ImVec2(0, 0));
@@ -78,7 +80,8 @@ void UI::drawContent(GamepadData& gamepadData)
     ImDrawList* drawList = ImGui::GetWindowDrawList();
     ImVec2 pos = ImGui::GetCursorScreenPos();
 
-    const char* title = gamepadData.name.c_str();
+    std::string titleString = gamepadData.name + " | " + getGamepadType(gamepadData.type);
+    const char* title = titleString.c_str();
     ImGui::SetCursorPosX((windowWidth - ImGui::CalcTextSize(title).x) * 0.5f);
     ImGui::TextColored(ImVec4(0.4f, 0.7f, 1.0f, 1.0f), title);
     ImGui::Separator();
@@ -168,4 +171,22 @@ void UI::drawSearchContent()
 	ImGui::SetCursorPosX((availableSpace.x - 500) * 0.5f);
 	ImGui::SetCursorPosY(ImGui::GetCursorPosY() + (availableSpace.y - 35.0f) * 0.5f);
 	ImGui::ProgressBar(-1.0 * (float)ImGui::GetTime(), ImVec2(500.0f,35.0f), "Searching Gamepad...");
+}
+
+std::string getGamepadType(SDL_GamepadType gamepadType)
+{
+    if (gamepadType == SDL_GAMEPAD_TYPE_XBOX360 | gamepadType == SDL_GAMEPAD_TYPE_XBOXONE)
+    {
+        return "Xbox";
+    } else if (gamepadType == SDL_GAMEPAD_TYPE_PS5){
+        return "Dualsense";
+    } else if (gamepadType == SDL_GAMEPAD_TYPE_PS4){
+        return "Dualshock 4";
+    } else if (gamepadType == SDL_GAMEPAD_TYPE_PS4){
+        return "Dualshock 3";
+    } else if (gamepadType == SDL_GAMEPAD_TYPE_STANDARD){
+        return "Generic";
+    } else {
+        return "Unknown";
+    }
 }
