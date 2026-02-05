@@ -173,6 +173,11 @@ void UI::drawSearchContent()
 	ImGui::ProgressBar(-1.0 * (float)ImGui::GetTime(), ImVec2(500.0f,35.0f), "Searching Gamepad...");
 }
 
+void UI::drawExtras(GamepadData &GamepadData)
+{
+    
+}
+
 std::string getGamepadType(SDL_GamepadType gamepadType)
 {
     if (gamepadType == SDL_GAMEPAD_TYPE_XBOX360 | gamepadType == SDL_GAMEPAD_TYPE_XBOXONE)

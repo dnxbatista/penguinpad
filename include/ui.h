@@ -9,6 +9,7 @@ private:
     void contentManager(Gamepad& gamepad);
     void drawContent(GamepadData& gamepadData); // Main Content
     void drawSearchContent(); // Searching Content
+    void drawExtras(GamepadData& GamepadData);
 };
 
 

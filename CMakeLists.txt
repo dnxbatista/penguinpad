@@ -6,16 +6,14 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 include(FetchContent)
 
-FetchContent_Declare(
+# -- Fetch SDL3
+FetchContent_Declare( 
     SDL3
     GIT_REPOSITORY https://github.com/libsdl-org/SDL.git
     GIT_TAG        main
 )
 
 FetchContent_MakeAvailable(SDL3)
-
-#list(APPEND CMAKE_PREFIX_PATH "${CMAKE_CURRENT_SOURCE_DIR}/external/SDL3")
-#find_package(SDL3 REQUIRED)
 
 set(IMGUI_DIR "${CMAKE_CURRENT_SOURCE_DIR}/external/imgui")
 set(IMGUI_SOURCES
@@ -38,7 +36,10 @@ target_include_directories(${PROJECT_NAME} PRIVATE
     ${IMGUI_DIR}/backends
 )
 
-target_link_libraries(${PROJECT_NAME} PRIVATE SDL3::SDL3-shared opengl32)
+target_link_libraries(${PROJECT_NAME} PRIVATE 
+SDL3::SDL3-shared 
+opengl32
+)
 
 add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_if_different
