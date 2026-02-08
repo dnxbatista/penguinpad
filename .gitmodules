@@ -1,0 +1,3 @@
+[submodule "external/Gamepad-Core"]
+	path = external/Gamepad-Core
+	url = https://github.com/rafaelvaloto/Gamepad-Core.git

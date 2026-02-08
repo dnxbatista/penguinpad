@@ -15,8 +15,6 @@ FetchContent_Declare(
 
 FetchContent_MakeAvailable(SDL3)
 
-
-
 set(IMGUI_DIR "${CMAKE_CURRENT_SOURCE_DIR}/external/imgui")
 set(IMGUI_SOURCES
     ${IMGUI_DIR}/imgui.cpp
