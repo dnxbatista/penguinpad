@@ -78,6 +78,10 @@ void App::processEvents()
 			{
 				m_showDemo = !m_showDemo;
 			}
+			if (event.key.key == SDLK_F3)
+			{
+				m_showDemo = !m_showDemo;
+			}
 		}
 	}
 }
