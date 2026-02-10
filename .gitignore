@@ -975,6 +975,7 @@ _deps
 *.lai
 *.la
 *.a
+*.lib
 
 # Executables
 *.exe
@@ -1004,6 +1005,7 @@ _deps
 *.pch
 
 # Libraries
+*.lib
 *.a
 *.la
 *.lo
