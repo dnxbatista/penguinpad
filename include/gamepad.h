@@ -29,6 +29,11 @@ public:
 	void setLightbar(uint8_t r, uint8_t g, uint8_t b);
 	bool rumble(float lowFrequency, float highFrequency, uint32_t durationMs);
 	bool rumbleTriggers(float left, float right, uint32_t durationMs);
+	bool hasGyro() const;
+	bool setGyroEnabled(bool enabled);
+	bool gyroEnabled() const;
+	bool getGyro(float out[3]) const;
+	float gyroRate() const;
 
 	const GamepadData& getData() const { return m_data; }
 private:

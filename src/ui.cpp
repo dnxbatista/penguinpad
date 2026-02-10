@@ -41,6 +41,10 @@ void UI::draw(bool& showDemo, Gamepad* gamepad)
             {
                 m_showPrecisionModal = true;
             }
+            if (ImGui::MenuItem("Gamepad Gyro"))
+            {
+                m_showGyroModal = true;
+            }
             ImGui::EndMenu();
         }
         ImGui::EndMenuBar();
@@ -303,6 +307,90 @@ void UI::draw(bool& showDemo, Gamepad* gamepad)
                 float remaining = 2.0f - m_precisionTimer;
                 if (remaining < 0.0f) remaining = 0.0f;
                 ImGui::Text("Time Remaining: %.1f s", remaining);
+            }
+
+            ImGui::EndPopup();
+        }
+    }
+
+    if (m_showGyroModal)
+    {
+        ImGui::OpenPopup("Gamepad Gyro");
+        if (ImGui::BeginPopupModal("Gamepad Gyro", &m_showGyroModal, ImGuiWindowFlags_AlwaysAutoResize))
+        {
+            ImGui::Text("Gyro Tester");
+            ImGui::Separator();
+
+            bool gyroSupported = gamepad->hasGyro();
+            if (!gyroSupported)
+            {
+                ImGui::TextDisabled("Gyro not supported on this gamepad.");
+            }
+            else
+            {
+                bool prevEnabled = m_gyroEnabled;
+                ImGui::Checkbox("Enable Gyro", &m_gyroEnabled);
+                if (m_gyroEnabled != prevEnabled)
+                {
+                    bool ok = gamepad->setGyroEnabled(m_gyroEnabled);
+                    m_gyroStatus = ok ? "Gyro updated" : "Failed to toggle gyro";
+                }
+
+                float rate = gamepad->gyroRate();
+                ImGui::Text("Rate: %.1f Hz", rate);
+
+                if (gamepad->gyroEnabled())
+                {
+                    if (gamepad->getGyro(m_gyroData))
+                    {
+                        float gx = m_gyroData[0] - m_gyroOffset[0];
+                        float gy = m_gyroData[1] - m_gyroOffset[1];
+                        float gz = m_gyroData[2] - m_gyroOffset[2];
+                        float magnitude = std::sqrt((gx * gx) + (gy * gy) + (gz * gz));
+
+                        ImGui::SeparatorText("Live Data");
+                        ImGui::Text("X: %.3f", gx);
+                        ImGui::Text("Y: %.3f", gy);
+                        ImGui::Text("Z: %.3f", gz);
+                        ImGui::Text("Magnitude: %.3f", magnitude);
+                    }
+                    else
+                    {
+                        ImGui::TextDisabled("No gyro data available.");
+                    }
+                }
+                else
+                {
+                    ImGui::TextDisabled("Gyro is disabled.");
+                }
+
+                if (ImGui::Button("Zero Offset"))
+                {
+                    if (gamepad->getGyro(m_gyroOffset))
+                    {
+                        m_gyroStatus = "Offset saved";
+                    }
+                }
+                ImGui::SameLine();
+                if (ImGui::Button("Reset Offset"))
+                {
+                    m_gyroOffset[0] = 0.0f;
+                    m_gyroOffset[1] = 0.0f;
+                    m_gyroOffset[2] = 0.0f;
+                    m_gyroStatus = "Offset cleared";
+                }
+            }
+
+            if (!m_gyroStatus.empty())
+            {
+                ImGui::TextDisabled("%s", m_gyroStatus.c_str());
+            }
+
+            ImGui::Spacing();
+            if (ImGui::Button("Close"))
+            {
+                m_showGyroModal = false;
+                ImGui::CloseCurrentPopup();
             }
 
             ImGui::EndPopup();

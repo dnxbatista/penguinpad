@@ -121,3 +121,40 @@ bool Gamepad::rumbleTriggers(float left, float right, uint32_t durationMs)
 
 	return SDL_RumbleGamepadTriggers(m_SDLgamepad, leftValue, rightValue, static_cast<Uint32>(durationMs));
 }
+
+bool Gamepad::hasGyro() const
+{
+	return m_SDLgamepad && SDL_GamepadHasSensor(m_SDLgamepad, SDL_SENSOR_GYRO);
+}
+
+bool Gamepad::setGyroEnabled(bool enabled)
+{
+	if (!m_SDLgamepad) {
+		return false;
+	}
+
+	return SDL_SetGamepadSensorEnabled(m_SDLgamepad, SDL_SENSOR_GYRO, enabled);
+}
+
+bool Gamepad::gyroEnabled() const
+{
+	return m_SDLgamepad && SDL_GamepadSensorEnabled(m_SDLgamepad, SDL_SENSOR_GYRO);
+}
+
+bool Gamepad::getGyro(float out[3]) const
+{
+	if (!m_SDLgamepad) {
+		return false;
+	}
+
+	return SDL_GetGamepadSensorData(m_SDLgamepad, SDL_SENSOR_GYRO, out, 3);
+}
+
+float Gamepad::gyroRate() const
+{
+	if (!m_SDLgamepad) {
+		return 0.0f;
+	}
+
+	return SDL_GetGamepadSensorDataRate(m_SDLgamepad, SDL_SENSOR_GYRO);
+}

@@ -17,6 +17,7 @@ private:
     bool m_showLightbarModal = false;
     bool m_showVibrationModal = false;
     bool m_showPrecisionModal = false;
+    bool m_showGyroModal = false;
 
     float m_rumbleLow = 0.6f;
     float m_rumbleHigh = 0.8f;
@@ -38,6 +39,11 @@ private:
     float m_rightMaxDrift = 0.0f;
     float m_leftAvgDrift = 0.0f;
     float m_rightAvgDrift = 0.0f;
+
+    bool m_gyroEnabled = true;
+    float m_gyroOffset[3] = { 0.0f, 0.0f, 0.0f };
+    float m_gyroData[3] = { 0.0f, 0.0f, 0.0f };
+    std::string m_gyroStatus;
 };
 
 
