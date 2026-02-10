@@ -25,7 +25,7 @@ void UI::draw(bool& showDemo, Gamepad* gamepad)
 
 	ImGui::Begin("penguinpad", nullptr, window_flags);
     // Draw --------------
-    if (ImGui::BeginMenuBar())
+    if (gamepad->getData().connected && ImGui::BeginMenuBar())
     {
         if (ImGui::BeginMenu("Tools"))
         {
