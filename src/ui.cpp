@@ -37,6 +37,10 @@ void UI::draw(bool& showDemo, Gamepad* gamepad)
             {
                 m_showVibrationModal = true;
             }
+            if (ImGui::MenuItem("Joystick Precision"))
+            {
+                m_showPrecisionModal = true;
+            }
             ImGui::EndMenu();
         }
         ImGui::EndMenuBar();
@@ -146,6 +150,159 @@ void UI::draw(bool& showDemo, Gamepad* gamepad)
             {
                 m_showVibrationModal = false;
                 ImGui::CloseCurrentPopup();
+            }
+
+            ImGui::EndPopup();
+        }
+    }
+
+    if (m_showPrecisionModal)
+    {
+        ImGui::OpenPopup("Joystick Precision");
+        if (ImGui::BeginPopupModal("Joystick Precision", &m_showPrecisionModal, ImGuiWindowFlags_AlwaysAutoResize))
+        {
+            ImGui::Text("Joystick Precision Tester");
+            ImGui::Separator();
+
+            ImGui::Text("Deadzone");
+            ImGui::SliderFloat("##PrecisionDeadzone", &m_precisionDeadzone, 0.0f, 0.3f, "%.2f");
+
+            ImGui::Spacing();
+            if (ImGui::Button("Calibrate Left Center"))
+            {
+                m_leftCenter[0] = gamepad->getData().leftStick[0];
+                m_leftCenter[1] = gamepad->getData().leftStick[1];
+            }
+            ImGui::SameLine();
+            if (ImGui::Button("Calibrate Right Center"))
+            {
+                m_rightCenter[0] = gamepad->getData().rightStick[0];
+                m_rightCenter[1] = gamepad->getData().rightStick[1];
+            }
+
+            ImGui::Spacing();
+            if (ImGui::BeginTable("PrecisionLayout", 2, ImGuiTableFlags_SizingStretchProp))
+            {
+                auto drawStickPanel = [&](const char* label, float x, float y) {
+                    ImGui::BeginChild(label, ImVec2(0, 180), true);
+                    ImVec2 panelPos = ImGui::GetCursorScreenPos();
+                    ImVec2 panelSize = ImGui::GetContentRegionAvail();
+                    float size = (panelSize.x < panelSize.y) ? panelSize.x : panelSize.y;
+                    float radius = (size * 0.5f) - 10.0f;
+                    ImVec2 center = ImVec2(panelPos.x + panelSize.x * 0.5f, panelPos.y + panelSize.y * 0.5f - 8.0f);
+
+                    ImDrawList* list = ImGui::GetWindowDrawList();
+                    list->AddCircle(center, radius, ImColor(120, 120, 120), 48, 2.0f);
+                    list->AddLine(ImVec2(center.x - radius, center.y), ImVec2(center.x + radius, center.y), ImColor(80, 80, 80), 1.0f);
+                    list->AddLine(ImVec2(center.x, center.y - radius), ImVec2(center.x, center.y + radius), ImColor(80, 80, 80), 1.0f);
+
+                    ImVec2 dot = ImVec2(center.x + x * radius, center.y + y * radius);
+                    list->AddCircleFilled(dot, 6.0f, ImColor(0, 180, 255));
+
+                    ImGui::Text("%s", label);
+                    ImGui::EndChild();
+                };
+
+                ImGui::TableNextRow();
+                ImGui::TableNextColumn();
+                float leftX = gamepad->getData().leftStick[0] - m_leftCenter[0];
+                float leftY = gamepad->getData().leftStick[1] - m_leftCenter[1];
+                drawStickPanel("Left Stick", leftX, leftY);
+
+                ImGui::TableNextColumn();
+                float rightX = gamepad->getData().rightStick[0] - m_rightCenter[0];
+                float rightY = gamepad->getData().rightStick[1] - m_rightCenter[1];
+                drawStickPanel("Right Stick", rightX, rightY);
+
+                ImGui::EndTable();
+            }
+
+            float leftMagnitude = std::sqrt((gamepad->getData().leftStick[0] - m_leftCenter[0]) * (gamepad->getData().leftStick[0] - m_leftCenter[0])
+                + (gamepad->getData().leftStick[1] - m_leftCenter[1]) * (gamepad->getData().leftStick[1] - m_leftCenter[1]));
+            float rightMagnitude = std::sqrt((gamepad->getData().rightStick[0] - m_rightCenter[0]) * (gamepad->getData().rightStick[0] - m_rightCenter[0])
+                + (gamepad->getData().rightStick[1] - m_rightCenter[1]) * (gamepad->getData().rightStick[1] - m_rightCenter[1]));
+
+            ImGui::SeparatorText("Metrics");
+            ImGui::Text("Left: [%.3f | %.3f]  Magnitude: %.3f  %s",
+                gamepad->getData().leftStick[0] - m_leftCenter[0],
+                gamepad->getData().leftStick[1] - m_leftCenter[1],
+                leftMagnitude,
+                (leftMagnitude <= m_precisionDeadzone) ? "In Deadzone" : "Active");
+            ImGui::Text("Right: [%.3f | %.3f]  Magnitude: %.3f  %s",
+                gamepad->getData().rightStick[0] - m_rightCenter[0],
+                gamepad->getData().rightStick[1] - m_rightCenter[1],
+                rightMagnitude,
+                (rightMagnitude <= m_precisionDeadzone) ? "In Deadzone" : "Active");
+
+            ImGui::Spacing();
+            if (ImGui::Button(m_precisionTestActive ? "Testing..." : "Start Hold Still Test"))
+            {
+                if (!m_precisionTestActive)
+                {
+                    m_precisionTestActive = true;
+                    m_precisionTimer = 0.0f;
+                    m_precisionSamples = 0;
+                    m_leftDriftSum = 0.0f;
+                    m_rightDriftSum = 0.0f;
+                    m_leftMaxDrift = 0.0f;
+                    m_rightMaxDrift = 0.0f;
+                    m_leftAvgDrift = 0.0f;
+                    m_rightAvgDrift = 0.0f;
+                }
+            }
+            ImGui::SameLine();
+            if (ImGui::Button("Reset Stats"))
+            {
+                m_precisionTestActive = false;
+                m_precisionTimer = 0.0f;
+                m_precisionSamples = 0;
+                m_leftDriftSum = 0.0f;
+                m_rightDriftSum = 0.0f;
+                m_leftMaxDrift = 0.0f;
+                m_rightMaxDrift = 0.0f;
+                m_leftAvgDrift = 0.0f;
+                m_rightAvgDrift = 0.0f;
+            }
+            ImGui::SameLine();
+            if (ImGui::Button("Close"))
+            {
+                m_showPrecisionModal = false;
+                ImGui::CloseCurrentPopup();
+            }
+
+            if (m_precisionTestActive)
+            {
+                m_precisionTimer += ImGui::GetIO().DeltaTime;
+                float leftDrift = leftMagnitude;
+                float rightDrift = rightMagnitude;
+
+                if (leftDrift > m_leftMaxDrift) m_leftMaxDrift = leftDrift;
+                if (rightDrift > m_rightMaxDrift) m_rightMaxDrift = rightDrift;
+
+                m_leftDriftSum += leftDrift;
+                m_rightDriftSum += rightDrift;
+                m_precisionSamples++;
+
+                if (m_precisionTimer >= 2.0f)
+                {
+                    m_precisionTestActive = false;
+                    if (m_precisionSamples > 0)
+                    {
+                        m_leftAvgDrift = m_leftDriftSum / static_cast<float>(m_precisionSamples);
+                        m_rightAvgDrift = m_rightDriftSum / static_cast<float>(m_precisionSamples);
+                    }
+                }
+            }
+
+            ImGui::Spacing();
+            ImGui::SeparatorText("Hold Still Results (2s)");
+            ImGui::Text("Left  Avg: %.4f  Max: %.4f", m_leftAvgDrift, m_leftMaxDrift);
+            ImGui::Text("Right Avg: %.4f  Max: %.4f", m_rightAvgDrift, m_rightMaxDrift);
+            if (m_precisionTestActive)
+            {
+                float remaining = 2.0f - m_precisionTimer;
+                if (remaining < 0.0f) remaining = 0.0f;
+                ImGui::Text("Time Remaining: %.1f s", remaining);
             }
 
             ImGui::EndPopup();
