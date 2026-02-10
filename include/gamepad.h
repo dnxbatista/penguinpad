@@ -25,8 +25,11 @@ public:
 	void update();
 	void handleEvent(const SDL_Event& event);
 
+	void setLightbar(uint8_t r, uint8_t g, uint8_t b);
+
 	const GamepadData& getData() const { return m_data; }
 private:
+	// SDL
 	SDL_Gamepad* m_SDLgamepad = nullptr;
 	GamepadData m_data;
 

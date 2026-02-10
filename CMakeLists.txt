@@ -26,8 +26,6 @@ set(IMGUI_SOURCES
     ${IMGUI_DIR}/backends/imgui_impl_sdlrenderer3.cpp
 )
 
-add_subdirectory(external/Gamepad-Core/Source)
-
 file(GLOB_RECURSE MY_CODE "src/*.cpp")
 
 add_executable(${PROJECT_NAME} ${MY_CODE} ${IMGUI_SOURCES})
@@ -36,13 +34,11 @@ target_include_directories(${PROJECT_NAME} PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/include
     ${IMGUI_DIR}
     ${IMGUI_DIR}/backends
-    external/Gamepad-Core/Source/Public
 )
 
 target_link_libraries(${PROJECT_NAME} PRIVATE 
 SDL3::SDL3-shared
 opengl32
-GamepadCore
 )
 
 add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD

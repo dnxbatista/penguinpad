@@ -1,5 +1,7 @@
 #include "gamepad.h"
 #include <iostream>
+#include <random>
+#include <cstdint>
 
 Gamepad::Gamepad()
 {
@@ -39,6 +41,22 @@ void Gamepad::handleEvent(const SDL_Event& event)
 		if (m_SDLgamepad && event.gdevice.which == SDL_GetGamepadID(m_SDLgamepad)) {
 			close();
 		}
+	}
+
+	if (event.type == SDL_EVENT_GAMEPAD_BUTTON_DOWN){
+		if (event.gbutton.button == SDL_GAMEPAD_BUTTON_DPAD_RIGHT){
+			uint8_t random_byte1 = static_cast<uint8_t>(std::rand() & 0xFF);
+			uint8_t random_byte2 = static_cast<uint8_t>(std::rand() & 0xFF);
+			uint8_t random_byte3 = static_cast<uint8_t>(std::rand() & 0xFF);
+			setLightbar(random_byte1, random_byte2, random_byte3);
+		}
+	}
+}
+
+void Gamepad::setLightbar(uint8_t r, uint8_t g, uint8_t b)
+{
+	if (m_SDLgamepad) {
+		SDL_SetGamepadLED(m_SDLgamepad, r, g, b);
 	}
 }
 
