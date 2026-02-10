@@ -15,6 +15,15 @@ private:
 
     float m_lightbarColor[3] = { 0.0f, 0.5f, 1.0f };
     bool m_showLightbarModal = false;
+    bool m_showVibrationModal = false;
+
+    float m_rumbleLow = 0.6f;
+    float m_rumbleHigh = 0.8f;
+    float m_triggerLeft = 0.6f;
+    float m_triggerRight = 0.6f;
+    int m_rumbleDurationMs = 300;
+    std::string m_rumbleStatus;
+    std::string m_triggerStatus;
 };
 
 

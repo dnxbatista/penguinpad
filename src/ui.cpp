@@ -33,6 +33,10 @@ void UI::draw(bool& showDemo, Gamepad* gamepad)
             {
                 m_showLightbarModal = true;
             }
+            if (ImGui::MenuItem("Gamepad Vibration"))
+            {
+                m_showVibrationModal = true;
+            }
             ImGui::EndMenu();
         }
         ImGui::EndMenuBar();
@@ -58,6 +62,92 @@ void UI::draw(bool& showDemo, Gamepad* gamepad)
                 m_showLightbarModal = false;
                 ImGui::CloseCurrentPopup();
             }
+            ImGui::EndPopup();
+        }
+    }
+
+    if (m_showVibrationModal)
+    {
+        ImGui::OpenPopup("Gamepad Vibration");
+        if (ImGui::BeginPopupModal("Gamepad Vibration", &m_showVibrationModal, ImGuiWindowFlags_AlwaysAutoResize))
+        {
+            ImGui::Text("Vibration Tester");
+            ImGui::Separator();
+
+            ImGui::Text("Presets");
+            if (ImGui::Button("Light"))
+            {
+                m_rumbleLow = 0.25f;
+                m_rumbleHigh = 0.35f;
+                m_triggerLeft = 0.25f;
+                m_triggerRight = 0.25f;
+            }
+            ImGui::SameLine();
+            if (ImGui::Button("Medium"))
+            {
+                m_rumbleLow = 0.5f;
+                m_rumbleHigh = 0.65f;
+                m_triggerLeft = 0.5f;
+                m_triggerRight = 0.5f;
+            }
+            ImGui::SameLine();
+            if (ImGui::Button("Strong"))
+            {
+                m_rumbleLow = 0.8f;
+                m_rumbleHigh = 1.0f;
+                m_triggerLeft = 0.8f;
+                m_triggerRight = 0.8f;
+            }
+
+            ImGui::Spacing();
+            ImGui::Text("Duration (ms)");
+            ImGui::SliderInt("##RumbleDuration", &m_rumbleDurationMs, 50, 2000);
+
+            ImGui::Spacing();
+            ImGui::Text("Rumble (Low / High)");
+            ImGui::SliderFloat("Low", &m_rumbleLow, 0.0f, 1.0f, "%.2f");
+            ImGui::SliderFloat("High", &m_rumbleHigh, 0.0f, 1.0f, "%.2f");
+            if (ImGui::Button("Test Rumble"))
+            {
+                bool ok = gamepad->rumble(m_rumbleLow, m_rumbleHigh, static_cast<uint32_t>(m_rumbleDurationMs));
+                m_rumbleStatus = ok ? "Rumble sent" : "Rumble not supported";
+            }
+            if (!m_rumbleStatus.empty())
+            {
+                ImGui::SameLine();
+                ImGui::TextDisabled("%s", m_rumbleStatus.c_str());
+            }
+
+            ImGui::Spacing();
+            ImGui::Text("Triggers (Left / Right)");
+            ImGui::SliderFloat("Left", &m_triggerLeft, 0.0f, 1.0f, "%.2f");
+            ImGui::SliderFloat("Right", &m_triggerRight, 0.0f, 1.0f, "%.2f");
+            if (ImGui::Button("Test Triggers"))
+            {
+                bool ok = gamepad->rumbleTriggers(m_triggerLeft, m_triggerRight, static_cast<uint32_t>(m_rumbleDurationMs));
+                m_triggerStatus = ok ? "Trigger rumble sent" : "Trigger rumble not supported";
+            }
+            if (!m_triggerStatus.empty())
+            {
+                ImGui::SameLine();
+                ImGui::TextDisabled("%s", m_triggerStatus.c_str());
+            }
+
+            ImGui::Spacing();
+            if (ImGui::Button("Stop All"))
+            {
+                gamepad->rumble(0.0f, 0.0f, 0);
+                gamepad->rumbleTriggers(0.0f, 0.0f, 0);
+                m_rumbleStatus = "Stopped";
+                m_triggerStatus = "Stopped";
+            }
+            ImGui::SameLine();
+            if (ImGui::Button("Close"))
+            {
+                m_showVibrationModal = false;
+                ImGui::CloseCurrentPopup();
+            }
+
             ImGui::EndPopup();
         }
     }

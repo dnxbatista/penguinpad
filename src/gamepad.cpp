@@ -85,3 +85,39 @@ void Gamepad::setLightbar(uint8_t r, uint8_t g, uint8_t b)
 		SDL_SetGamepadLED(m_SDLgamepad, r, g, b);
 	}
 }
+
+bool Gamepad::rumble(float lowFrequency, float highFrequency, uint32_t durationMs)
+{
+	if (!m_SDLgamepad) {
+		return false;
+	}
+
+	auto clamp01 = [](float value) {
+		if (value < 0.0f) return 0.0f;
+		if (value > 1.0f) return 1.0f;
+		return value;
+	};
+
+	Uint16 lowValue = static_cast<Uint16>(clamp01(lowFrequency) * 65535.0f);
+	Uint16 highValue = static_cast<Uint16>(clamp01(highFrequency) * 65535.0f);
+
+	return SDL_RumbleGamepad(m_SDLgamepad, lowValue, highValue, static_cast<Uint32>(durationMs));
+}
+
+bool Gamepad::rumbleTriggers(float left, float right, uint32_t durationMs)
+{
+	if (!m_SDLgamepad) {
+		return false;
+	}
+
+	auto clamp01 = [](float value) {
+		if (value < 0.0f) return 0.0f;
+		if (value > 1.0f) return 1.0f;
+		return value;
+	};
+
+	Uint16 leftValue = static_cast<Uint16>(clamp01(left) * 65535.0f);
+	Uint16 rightValue = static_cast<Uint16>(clamp01(right) * 65535.0f);
+
+	return SDL_RumbleGamepadTriggers(m_SDLgamepad, leftValue, rightValue, static_cast<Uint32>(durationMs));
+}
