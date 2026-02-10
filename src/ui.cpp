@@ -5,6 +5,7 @@
 #include <string>
 #include <sstream>
 #include <format>
+#include <cstdint>
 
 std::string getGamepadType(SDL_GamepadType gamepadType);
 std::string floatToString(float value);
@@ -20,15 +21,52 @@ void UI::draw(bool& showDemo, Gamepad* gamepad)
 	window_flags |= ImGuiWindowFlags_NoMove;
 	window_flags |= ImGuiWindowFlags_NoCollapse;
 	window_flags |= ImGuiWindowFlags_NoBringToFrontOnFocus;
+    window_flags |= ImGuiWindowFlags_MenuBar;
 
 	ImGui::Begin("penguinpad", nullptr, window_flags);
-	// Draw --------------
+    // Draw --------------
+    if (ImGui::BeginMenuBar())
+    {
+        if (ImGui::BeginMenu("Tools"))
+        {
+            if (ImGui::MenuItem("Gamepad Light"))
+            {
+                m_showLightbarModal = true;
+            }
+            ImGui::EndMenu();
+        }
+        ImGui::EndMenuBar();
+    }
+
+    if (m_showLightbarModal)
+    {
+        ImGui::OpenPopup("Gamepad Light");
+        if (ImGui::BeginPopupModal("Gamepad Light", &m_showLightbarModal, ImGuiWindowFlags_AlwaysAutoResize))
+        {
+            ImGui::Text("Lightbar");
+            ImGui::ColorEdit3("Color", m_lightbarColor);
+            if (ImGui::Button("Update"))
+            {
+                uint8_t r = static_cast<uint8_t>(m_lightbarColor[0] * 255.0f);
+                uint8_t g = static_cast<uint8_t>(m_lightbarColor[1] * 255.0f);
+                uint8_t b = static_cast<uint8_t>(m_lightbarColor[2] * 255.0f);
+                gamepad->setLightbar(r, g, b);
+            }
+            ImGui::SameLine();
+            if (ImGui::Button("Close"))
+            {
+                m_showLightbarModal = false;
+                ImGui::CloseCurrentPopup();
+            }
+            ImGui::EndPopup();
+        }
+    }
 	if (showDemo)
 	{
 		ImGui::ShowDemoWindow(&showDemo);
 	}
 
-	contentManager(*gamepad);
+    contentManager(*gamepad);
 	// End Draw --------------
 	ImGui::End();
 }
@@ -70,15 +108,17 @@ void UI::contentManager(Gamepad& gamepad)
     GamepadData gamepadData = gamepad.getData();
 	if (gamepadData.connected)
 	{
-		drawContent(gamepadData);
+		drawContent(gamepad);
 	}
 	else {
 		drawSearchContent();
 	}
 }
 
-void UI::drawContent(GamepadData& gamepadData)
+void UI::drawContent(Gamepad& gamepad)
 {   
+    GamepadData gamepadData = gamepad.getData();
+
     // Header
     float windowWidth = ImGui::GetWindowSize().x;
     ImDrawList* drawList = ImGui::GetWindowDrawList();
