@@ -4,6 +4,7 @@
 #include <cmath>
 #include <string>
 #include <sstream>
+#include <format>
 
 std::string getGamepadType(SDL_GamepadType gamepadType);
 std::string floatToString(float value);
@@ -115,13 +116,13 @@ void UI::drawContent(GamepadData& gamepadData)
         ImGui::SetCursorScreenPos(ImVec2(pos.x + windowWidth * 0.2f, pos.y + 80));
         ImGui::ProgressBar(gamepadData.leftTrigger, ImVec2(80, 20), "L2");
         drawList->AddText(ImVec2(pos.x + windowWidth * 0.2f, pos.y + 110),
-         ImColor(255, 255, 255), 
+         ImColor(180, 180, 180), 
          floatToString(gamepadData.leftTrigger).c_str());
 
         ImGui::SetCursorScreenPos(ImVec2(pos.x + windowWidth * 0.7f, pos.y + 80));
         ImGui::ProgressBar(gamepadData.rightTrigger, ImVec2(80, 20), "R2");
         drawList->AddText(ImVec2(pos.x + windowWidth * 0.7f, pos.y + 110), 
-        ImColor(255, 255, 255), 
+        ImColor(180, 180, 180), 
         floatToString(gamepadData.rightTrigger).c_str());
 
         float centerX = pos.x + windowWidth * 0.5f;
@@ -129,7 +130,7 @@ void UI::drawContent(GamepadData& gamepadData)
         drawRectBtn(ImVec2(centerX - 15, pos.y + (120- 15)), ImVec2(30, 30), "G", SDL_GAMEPAD_BUTTON_GUIDE);
         drawCircleBtn(ImVec2(centerX + 40, pos.y + 120), ">", SDL_GAMEPAD_BUTTON_START, ImColor(150, 150, 150));
 
-        auto drawStick = [&](ImVec2 center, float x, float y, const char* label, int stickBtnIdx) {
+        auto drawStick = [&](ImVec2 center, float x, float y, const char* label, const char* stickValue, int stickBtnIdx) {
             float radius = 45.0f;
             bool isPressed = gamepadData.buttons[stickBtnIdx];
             drawList->AddCircleFilled(center, radius, isPressed ? ImColor(70, 70, 70) : ImColor(40, 40, 40));
@@ -137,11 +138,29 @@ void UI::drawContent(GamepadData& gamepadData)
 
             ImVec2 stickPos = ImVec2(center.x + (x * radius * 0.7f), center.y + (y * radius * 0.7f));
             drawList->AddCircleFilled(stickPos, 12.0f, isPressed ? ImColor(0, 255, 255) : ImColor(0, 150, 255));
-            drawList->AddText(ImVec2(center.x - 25, center.y + radius + 10), ImColor(180, 180, 180), label);
+            drawList->AddText(ImVec2(center.x - 25, center.y + radius - 115), ImColor(180, 180, 180), label);
+            drawList->AddText(ImVec2(center.x - 85, center.y + radius + 10), ImColor(180, 180, 180), stickValue);
             };
+        
+        std::string formatedLeftStickerAxis = std::format("[{} | {}]", 
+            floatToString(gamepadData.leftStick[0]), 
+            floatToString(gamepadData.leftStick[1]));
+        std::string formatedRightStickerAxis = std::format("[{} | {}]", 
+            floatToString(gamepadData.rightStick[0]), 
+            floatToString(gamepadData.rightStick[1]));
+        drawStick(ImVec2(pos.x + windowWidth * 0.3f, pos.y + 220), 
+        gamepadData.leftStick[0], 
+        gamepadData.leftStick[1], 
+        "L-Stick", 
+        formatedLeftStickerAxis.c_str(), 
+        SDL_GAMEPAD_BUTTON_LEFT_STICK);
 
-        drawStick(ImVec2(pos.x + windowWidth * 0.3f, pos.y + 220), gamepadData.leftStick[0], gamepadData.leftStick[1], "L-Stick", SDL_GAMEPAD_BUTTON_LEFT_STICK);
-        drawStick(ImVec2(pos.x + windowWidth * 0.7f, pos.y + 220), gamepadData.rightStick[0], gamepadData.rightStick[1], "R-Stick", SDL_GAMEPAD_BUTTON_RIGHT_STICK);
+        drawStick(ImVec2(pos.x + windowWidth * 0.7f, pos.y + 220), 
+        gamepadData.rightStick[0], 
+        gamepadData.rightStick[1], 
+        "R-Stick",
+        formatedRightStickerAxis.c_str(),
+        SDL_GAMEPAD_BUTTON_RIGHT_STICK);
 
         float dpadX = pos.x + windowWidth * 0.15f;
         float dpadY = pos.y + 350;
