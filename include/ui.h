@@ -1,5 +1,6 @@
 #pragma once
 #include "gamepad.h"
+#include <string>
 class UI
 {
 public:
@@ -9,7 +10,8 @@ private:
     void contentManager(Gamepad& gamepad);
     void drawContent(GamepadData& gamepadData); // Main Content
     void drawSearchContent(); // Searching Content
-    void drawExtras(GamepadData& GamepadData);
+
+    std::string floatToString(float value);
 };
 
 

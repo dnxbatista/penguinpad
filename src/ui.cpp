@@ -2,8 +2,11 @@
 #include "gamepad.h"
 #include <imgui.h>
 #include <cmath>
+#include <string>
+#include <sstream>
 
 std::string getGamepadType(SDL_GamepadType gamepadType);
+std::string floatToString(float value);
 
 void UI::draw(bool& showDemo, Gamepad* gamepad)
 {
@@ -111,10 +114,15 @@ void UI::drawContent(GamepadData& gamepadData)
 
         ImGui::SetCursorScreenPos(ImVec2(pos.x + windowWidth * 0.2f, pos.y + 80));
         ImGui::ProgressBar(gamepadData.leftTrigger, ImVec2(80, 20), "L2");
-        drawList->AddText(ImVec2(pos.x + windowWidth * 0.2f, pos.y + 110), ImColor(255, 255, 255), "Test");
+        drawList->AddText(ImVec2(pos.x + windowWidth * 0.2f, pos.y + 110),
+         ImColor(255, 255, 255), 
+         floatToString(gamepadData.leftTrigger).c_str());
+
         ImGui::SetCursorScreenPos(ImVec2(pos.x + windowWidth * 0.7f, pos.y + 80));
         ImGui::ProgressBar(gamepadData.rightTrigger, ImVec2(80, 20), "R2");
-        drawList->AddText(ImVec2(pos.x + windowWidth * 0.7f, pos.y + 110), ImColor(255, 255, 255), "Test");
+        drawList->AddText(ImVec2(pos.x + windowWidth * 0.7f, pos.y + 110), 
+        ImColor(255, 255, 255), 
+        floatToString(gamepadData.rightTrigger).c_str());
 
         float centerX = pos.x + windowWidth * 0.5f;
         drawCircleBtn(ImVec2(centerX - 40, pos.y + 120), "<", SDL_GAMEPAD_BUTTON_BACK, ImColor(150, 150, 150));
@@ -173,9 +181,11 @@ void UI::drawSearchContent()
 	ImGui::ProgressBar(-1.0 * (float)ImGui::GetTime(), ImVec2(500.0f,35.0f), "Searching Gamepad...");
 }
 
-void UI::drawExtras(GamepadData &GamepadData)
+std::string UI::floatToString(float value)
 {
-    
+    std::stringstream ss;
+    ss << value;
+    return ss.str();
 }
 
 std::string getGamepadType(SDL_GamepadType gamepadType)
