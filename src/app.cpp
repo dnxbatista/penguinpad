@@ -59,10 +59,6 @@ bool App::init()
 		std::cerr << "Error to load font!" << std::endl;
 	}
 
-	static const ImWchar ranges[] = { // Basic latin support
-		0x0020, 0x00FF, 0
-	};
-
 	m_running = true;
 	return true;
 }

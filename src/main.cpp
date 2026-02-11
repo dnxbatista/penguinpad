@@ -9,7 +9,7 @@
 #include <iostream>
 #include "app.h"
 
-int main(int argc, char* argv[])
+int main(int, char**)
 {
 	App myApp("penguinpad", 1280, 720);
 

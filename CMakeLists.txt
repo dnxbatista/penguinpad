@@ -46,10 +46,23 @@ set(IMGUI_SOURCES
 
 file(GLOB_RECURSE MY_CODE "src/*.cpp")
 
-add_executable(${PROJECT_NAME} ${MY_CODE} ${IMGUI_SOURCES})
+# Add Windows icon resource (only if icon.ico exists)
+if(WIN32)
+    set(ICON_FILE "${CMAKE_CURRENT_SOURCE_DIR}/assets/windows/icon.ico")
+    if(EXISTS ${ICON_FILE})
+        set(RESOURCE_FILE "${CMAKE_CURRENT_SOURCE_DIR}/assets/windows/penguinpad.rc")
+        set(ICON_RESOURCE ${RESOURCE_FILE})
+        message(STATUS "Building with Windows icon")
+    else()
+        message(STATUS "Building without icon (icon.ico not found)")
+    endif()
+endif()
+
+add_executable(${PROJECT_NAME} ${MY_CODE} ${IMGUI_SOURCES} ${ICON_RESOURCE})
 
 target_include_directories(${PROJECT_NAME} PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/include
+    ${CMAKE_CURRENT_SOURCE_DIR}/assets/windows
     ${IMGUI_DIR}
     ${IMGUI_DIR}/backends
 )
