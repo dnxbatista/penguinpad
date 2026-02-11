@@ -34,10 +34,14 @@ public:
 	bool gyroEnabled() const;
 	bool getGyro(float out[3]) const;
 	float gyroRate() const;
+    
+    int getNumTouchpads() const;
+    int getNumTouchpadFingers(int touchpadIndex) const;
+    bool getTouchpadFinger(int touchpadIndex, int fingerIndex, float& x, float& y, float& pressure) const;
+    SDL_Gamepad* getSDLGamepad() const { return m_SDLgamepad; }
 
-	const GamepadData& getData() const { return m_data; }
+    const GamepadData& getData() const { return m_data; }
 private:
-	// SDL
 	SDL_Gamepad* m_SDLgamepad = nullptr;
 	GamepadData m_data;
 

@@ -43,6 +43,7 @@ void UI::draw(bool& showDemo, Gamepad* gamepad)
     drawVibrationModal(gamepad);
     drawPrecisionModal(gamepad);
     drawGyroModal(gamepad);
+    drawTouchpadModal(gamepad);
     
     if (showDemo)
         ImGui::ShowDemoWindow(&showDemo);
@@ -65,6 +66,8 @@ void UI::drawMenuBar(Gamepad* gamepad)
                 m_showPrecisionModal = true;
             if (ImGui::MenuItem("Gamepad Gyro"))
                 m_showGyroModal = true;
+            if (ImGui::MenuItem("Gamepad Touchpad"))
+                m_showTouchpadModal = true;
             ImGui::EndMenu();
         }
         ImGui::EndMenuBar();
@@ -364,6 +367,11 @@ void UI::drawGyroModal(Gamepad* gamepad)
         }
         else
         {
+            if (m_gyroEnabled && !gamepad->gyroEnabled())
+            {
+                gamepad->setGyroEnabled(true);
+            }
+            
             bool prevEnabled = m_gyroEnabled;
             ImGui::Checkbox("Enable Gyro", &m_gyroEnabled);
             if (m_gyroEnabled != prevEnabled)
@@ -382,7 +390,7 @@ void UI::drawGyroModal(Gamepad* gamepad)
                     float magnitude = std::sqrt((gx * gx) + (gy * gy) + (gz * gz));
 
                     float posX = gy * m_gyroSensitivity;
-                    float posY = -gx * m_gyroSensitivity;
+                    float posY = gx * m_gyroSensitivity;
                     
                     posX = std::clamp(posX, -1.0f, 1.0f);
                     posY = std::clamp(posY, -1.0f, 1.0f);
@@ -458,7 +466,7 @@ void UI::drawGyroModal(Gamepad* gamepad)
                                 ImVec2(center.x, center.y + halfBox),
                                 ImColor(80, 80, 80), 1.0f);
 
-                            ImGui::SetCursorScreenPos(ImVec2(canvas_pos.x + 5, canvas_pos.y + 5));
+                            ImGui::SetCursorScreenPos(ImVec2(canvas_pos.x + 25, canvas_pos.y + 15));
                             ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), "Tilt Visualization");
                         }
                         ImGui::EndChild();
@@ -555,6 +563,115 @@ void UI::drawGyroModal(Gamepad* gamepad)
         {
             m_showGyroModal = false;
             m_gyroChallengeMode = false;
+            ImGui::CloseCurrentPopup();
+        }
+
+        ImGui::EndPopup();
+    }
+}
+
+void UI::drawTouchpadModal(Gamepad* gamepad)
+{
+    if (!m_showTouchpadModal)
+        return;
+        
+    ImGui::OpenPopup("Gamepad Touchpad");
+    if (ImGui::BeginPopupModal("Gamepad Touchpad", &m_showTouchpadModal, ImGuiWindowFlags_AlwaysAutoResize))
+    {
+        ImGui::Text("Touchpad Tester");
+        ImGui::Separator();
+
+        int numTouchpads = gamepad->getNumTouchpads();
+        if (numTouchpads == 0)
+        {
+            ImGui::TextDisabled("Touchpad not supported on this gamepad.");
+        }
+        else
+        {
+            ImGui::Text("Touchpads: %d", numTouchpads);
+            ImGui::Spacing();
+
+            for (int touchpadIdx = 0; touchpadIdx < numTouchpads; touchpadIdx++)
+            {
+                if (numTouchpads > 1)
+                {
+                    ImGui::SeparatorText(std::format("Touchpad {}", touchpadIdx + 1).c_str());
+                }
+
+                int numFingers = gamepad->getNumTouchpadFingers(touchpadIdx);
+                ImGui::Text("Max Fingers: %d", numFingers);
+                
+                ImGui::Spacing();
+                ImGui::BeginChild(std::format("TouchpadVisual{}", touchpadIdx).c_str(), ImVec2(500, 280), true);
+                {
+                    ImVec2 canvas_pos = ImGui::GetCursorScreenPos();
+                    ImVec2 canvas_size = ImGui::GetContentRegionAvail();
+                    float padWidth = canvas_size.x - 20.0f;
+                    float padHeight = 200.0f;
+                    ImVec2 padPos = ImVec2(canvas_pos.x + 10, canvas_pos.y + 10);
+
+                    ImDrawList* draw = ImGui::GetWindowDrawList();
+                    
+                    draw->AddRectFilled(padPos, ImVec2(padPos.x + padWidth, padPos.y + padHeight), 
+                        ImColor(40, 40, 45), 8.0f);
+                    draw->AddRect(padPos, ImVec2(padPos.x + padWidth, padPos.y + padHeight), 
+                        ImColor(100, 100, 100), 8.0f, 0, 2.0f);
+
+                    int activeTouches = 0;
+                    for (int fingerIdx = 0; fingerIdx < numFingers; fingerIdx++)
+                    {
+                        float x, y, pressure;
+                        if (gamepad->getTouchpadFinger(touchpadIdx, fingerIdx, x, y, pressure))
+                        {
+                            activeTouches++;
+                            
+                            ImVec2 touchPos = ImVec2(padPos.x + x * padWidth, padPos.y + y * padHeight);
+                            float radius = 8.0f + (pressure * 12.0f);
+                            
+                            ImColor fingerColors[] = {
+                                ImColor(0, 180, 255),
+                                ImColor(255, 100, 100),
+                                ImColor(100, 255, 100),
+                                ImColor(255, 255, 100)
+                            };
+                            ImColor color = fingerColors[fingerIdx % 4];
+                            
+                            draw->AddCircleFilled(touchPos, radius, color);
+                            draw->AddCircle(touchPos, radius, ImColor(255, 255, 255), 16, 2.0f);
+                            
+                            draw->AddText(ImVec2(touchPos.x - 5, touchPos.y - 8), 
+                                ImColor(255, 255, 255), std::to_string(fingerIdx + 1).c_str());
+                        }
+                    }
+
+                    ImGui::SetCursorScreenPos(ImVec2(canvas_pos.x + 10, canvas_pos.y + padHeight + 20));
+                    ImGui::Text("Active Touches: %d", activeTouches);
+                    
+                    ImGui::Spacing();
+                    ImGui::SeparatorText("Touch Data");
+                    for (int fingerIdx = 0; fingerIdx < numFingers; fingerIdx++)
+                    {
+                        float x, y, pressure;
+                        if (gamepad->getTouchpadFinger(touchpadIdx, fingerIdx, x, y, pressure))
+                        {
+                            ImGui::Text("Finger %d: X=%.3f Y=%.3f P=%.3f", 
+                                fingerIdx + 1, x, y, pressure);
+                        }
+                    }
+                }
+                ImGui::EndChild();
+                
+                if (touchpadIdx < numTouchpads - 1)
+                {
+                    ImGui::Spacing();
+                }
+            }
+        }
+
+        ImGui::Spacing();
+        if (ImGui::Button("Close"))
+        {
+            m_showTouchpadModal = false;
             ImGui::CloseCurrentPopup();
         }
 

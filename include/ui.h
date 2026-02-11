@@ -19,6 +19,7 @@ private:
     void drawVibrationModal(Gamepad* gamepad);
     void drawPrecisionModal(Gamepad* gamepad);
     void drawGyroModal(Gamepad* gamepad);
+    void drawTouchpadModal(Gamepad* gamepad);
 
     std::string floatToString(float value);
 
@@ -27,6 +28,7 @@ private:
     bool m_showVibrationModal = false;
     bool m_showPrecisionModal = false;
     bool m_showGyroModal = false;
+    bool m_showTouchpadModal = false;
 
     float m_rumbleLow = 0.6f;
     float m_rumbleHigh = 0.8f;

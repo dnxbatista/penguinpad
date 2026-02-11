@@ -158,3 +158,22 @@ float Gamepad::gyroRate() const
 
 	return SDL_GetGamepadSensorDataRate(m_SDLgamepad, SDL_SENSOR_GYRO);
 }
+
+int Gamepad::getNumTouchpads() const
+{
+	if (!m_SDLgamepad) return 0;
+	return SDL_GetNumGamepadTouchpads(m_SDLgamepad);
+}
+
+int Gamepad::getNumTouchpadFingers(int touchpadIndex) const
+{
+	if (!m_SDLgamepad) return 0;
+	return SDL_GetNumGamepadTouchpadFingers(m_SDLgamepad, touchpadIndex);
+}
+
+bool Gamepad::getTouchpadFinger(int touchpadIndex, int fingerIndex, float& x, float& y, float& pressure) const
+{
+	if (!m_SDLgamepad) return false;
+	bool state;
+	return SDL_GetGamepadTouchpadFinger(m_SDLgamepad, touchpadIndex, fingerIndex, &state, &x, &y, &pressure) && state;
+}
