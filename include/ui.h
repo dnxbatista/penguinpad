@@ -11,8 +11,14 @@ public:
     void cleanup();
 private:
     void contentManager(Gamepad& gamepad);
-    void drawContent(Gamepad& gamepad); // Main Content
-    void drawSearchContent(); // Searching Content
+    void drawContent(Gamepad& gamepad);
+    void drawSearchContent();
+    
+    void drawMenuBar(Gamepad* gamepad);
+    void drawLightbarModal(Gamepad* gamepad);
+    void drawVibrationModal(Gamepad* gamepad);
+    void drawPrecisionModal(Gamepad* gamepad);
+    void drawGyroModal(Gamepad* gamepad);
 
     std::string floatToString(float value);
 
