@@ -7,7 +7,7 @@
 #include <iostream>
 
 App::App(const std::string& title, int width, int height)
-	: m_title(title), m_width(width), m_heigth(height) { }
+	: m_title(title), m_width(width), m_height(height) { }
 
 App::~App()
 {
@@ -26,7 +26,7 @@ bool App::init()
 {
 	if (!SDL_Init(SDL_INIT_VIDEO | SDL_INIT_GAMEPAD)) return false;
 
-	if (!SDL_CreateWindowAndRenderer(m_title.c_str(), m_width, m_heigth, 0, &m_window, &m_renderer))
+	if (!SDL_CreateWindowAndRenderer(m_title.c_str(), m_width, m_height, 0, &m_window, &m_renderer))
 	{
 		return false;
 	}
@@ -58,10 +58,6 @@ bool App::init()
 	{
 		std::cerr << "Error to load font!" << std::endl;
 	}
-
-	static const ImWchar ranges[] = { // Basic latin support
-		0x0020, 0x00FF, 0
-	};
 
 	m_running = true;
 	return true;

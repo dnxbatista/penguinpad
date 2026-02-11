@@ -1,6 +1,7 @@
 #include "ui.h"
 #include "gamepad.h"
 #include <imgui.h>
+#include <algorithm>
 #include <cmath>
 #include <string>
 #include <sstream>
@@ -887,7 +888,7 @@ void UI::drawSearchContent()
     ImVec2 availableSpace = ImGui::GetContentRegionAvail();
     ImGui::SetCursorPosX((availableSpace.x - 500) * 0.5f);
     ImGui::SetCursorPosY(ImGui::GetCursorPosY() + (availableSpace.y - 35.0f) * 0.5f);
-    ImGui::ProgressBar(-1.0 * (float)ImGui::GetTime(), ImVec2(500.0f, 35.0f), "Searching Gamepad...");
+    ImGui::ProgressBar(-1.0f * (float)ImGui::GetTime(), ImVec2(500.0f, 35.0f), "Searching Gamepad...");
 }
 
 std::string UI::floatToString(float value)
@@ -899,10 +900,21 @@ std::string UI::floatToString(float value)
 
 bool UI::loadTextures(SDL_Renderer* renderer)
 {
-    SDL_Surface* surface = SDL_LoadBMP("../assets/images/arrow.bmp");
+    // Get the base path where the executable is located
+    const char* basePath = SDL_GetBasePath();
+    if (!basePath)
+    {
+        std::cerr << "Failed to get base path" << std::endl;
+        return false;
+    }
+
+    std::string assetPath = std::string(basePath) + "assets/images/arrow.bmp";
+    SDL_free(const_cast<char*>(basePath));
+
+    SDL_Surface* surface = SDL_LoadBMP(assetPath.c_str());
     if (!surface)
     {
-        std::cerr << "Failed to load arrow.bmp: " << SDL_GetError() << std::endl;
+        std::cerr << "Failed to load arrow.bmp from " << assetPath << ": " << SDL_GetError() << std::endl;
         return false;
     }
 

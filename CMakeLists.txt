@@ -1,8 +1,32 @@
 cmake_minimum_required(VERSION 3.24)
-project(penguinpad VERSION 1.0)
+
+# Windows-only project
+if(NOT WIN32)
+    message(FATAL_ERROR "PenguinPad is a Windows-only application")
+endif()
+
+project(penguinpad 
+    VERSION 1.0.0
+    DESCRIPTION "Lightweight gamepad input testing tool"
+    LANGUAGES CXX
+)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
+
+# Output directories for better organization
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
+
+# Build type
+if(NOT CMAKE_BUILD_TYPE)
+    set(CMAKE_BUILD_TYPE "Release" CACHE STRING "Build type" FORCE)
+endif()
+
+message(STATUS "Build type: ${CMAKE_BUILD_TYPE}")
+message(STATUS "PenguinPad version: ${PROJECT_VERSION}")
 
 include(FetchContent)
 
@@ -28,10 +52,21 @@ set(IMGUI_SOURCES
 
 file(GLOB_RECURSE MY_CODE "src/*.cpp")
 
-add_executable(${PROJECT_NAME} ${MY_CODE} ${IMGUI_SOURCES})
+# Add Windows icon resource
+set(ICON_FILE "${CMAKE_CURRENT_SOURCE_DIR}/assets/windows/icon.ico")
+if(EXISTS ${ICON_FILE})
+    set(RESOURCE_FILE "${CMAKE_CURRENT_SOURCE_DIR}/assets/windows/penguinpad.rc")
+    set(ICON_RESOURCE ${RESOURCE_FILE})
+    message(STATUS "Building with Windows icon")
+else()
+    message(STATUS "Building without icon (icon.ico not found)")
+endif()
+
+add_executable(${PROJECT_NAME} WIN32 ${MY_CODE} ${IMGUI_SOURCES} ${ICON_RESOURCE})
 
 target_include_directories(${PROJECT_NAME} PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/include
+    ${CMAKE_CURRENT_SOURCE_DIR}/assets/windows
     ${IMGUI_DIR}
     ${IMGUI_DIR}/backends
 )
@@ -46,3 +81,42 @@ add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
     $<TARGET_FILE:SDL3::SDL3-shared>
     $<TARGET_FILE_DIR:${PROJECT_NAME}>
 )
+
+# Compiler warnings for code quality
+target_compile_options(${PROJECT_NAME} PRIVATE /W4)
+
+# Version information
+configure_file(
+    "${CMAKE_CURRENT_SOURCE_DIR}/include/version.h.in"
+    "${CMAKE_CURRENT_BINARY_DIR}/include/version.h"
+    @ONLY
+)
+
+target_include_directories(${PROJECT_NAME} PRIVATE
+    ${CMAKE_CURRENT_BINARY_DIR}/include
+)
+
+# Installation rules
+install(TARGETS ${PROJECT_NAME}
+    RUNTIME DESTINATION bin
+)
+
+install(FILES README.md LICENSE CHANGELOG.md
+    DESTINATION share/doc/${PROJECT_NAME}
+)
+
+# CPack configuration for creating installers
+set(CPACK_PACKAGE_NAME "PenguinPad")
+set(CPACK_PACKAGE_VENDOR "PenguinPad Contributors")
+set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Lightweight gamepad input testing tool")
+set(CPACK_PACKAGE_VERSION_MAJOR ${PROJECT_VERSION_MAJOR})
+set(CPACK_PACKAGE_VERSION_MINOR ${PROJECT_VERSION_MINOR})
+set(CPACK_PACKAGE_VERSION_PATCH ${PROJECT_VERSION_PATCH})
+set(CPACK_PACKAGE_INSTALL_DIRECTORY "PenguinPad")
+set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/LICENSE")
+set(CPACK_RESOURCE_FILE_README "${CMAKE_CURRENT_SOURCE_DIR}/README.md")
+
+# Windows-only generators
+set(CPACK_GENERATOR "ZIP;NSIS")
+
+include(CPack)

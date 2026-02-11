@@ -22,7 +22,7 @@ private:
 	SDL_Renderer* m_renderer = nullptr;
 	bool m_running = false;
 	std::string m_title;
-	int m_width, m_heigth;
+	int m_width, m_height;
 
 	// External References
 	UI m_ui;
