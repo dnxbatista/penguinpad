@@ -18,14 +18,27 @@ A lightweight and efficient tool to test gamepad inputs, developed in C++.
 
 ## Getting Started
 
-### Prerequisites
+### For Users - Download Prebuilt Executable
+
+If you just want to use PenguinPad, simply download the latest portable executable from the [Releases](https://github.com/dnxbatista/penguinpad/releases) page:
+
+1. Go to [PenguinPad Releases](https://github.com/dnxbatista/penguinpad/releases)
+2. Download `penguinpad-portable.zip`
+3. Extract the ZIP file
+4. Run `penguinpad.exe`
+
+That's it! No installation or dependencies required.
+
+### For Developers - Build from Source
+
+#### Prerequisites
 
 Ensure you have the following installed on your system:
 - **C++ Compiler**: MSVC 2019+ (Visual Studio 2019 or newer)
 - **CMake**: Version 3.24 or higher
 - **Git**: For cloning the repository
 
-### Quick Start
+#### Build Instructions
 
 ```bash
 # Clone the repository
@@ -55,7 +68,7 @@ cmake --build . --config Release
 PenguinPad supports any controller recognized by SDL3, including:
 - Xbox Controllers (Series X/S, One, 360)
 - PlayStation Controllers (DualSense, DualShock 4)
-- Nintendo Switch Pro Controller
+- Nintendo Switch Controller
 - Generic USB/Bluetooth gamepads
 
 ## Contributing
