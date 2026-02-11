@@ -47,6 +47,17 @@ private:
     float m_gyroOffset[3] = { 0.0f, 0.0f, 0.0f };
     float m_gyroData[3] = { 0.0f, 0.0f, 0.0f };
     std::string m_gyroStatus;
+    
+    // Gyro visualization
+    float m_gyroSensitivity = 1.5f;
+    bool m_gyroChallengeMode = false;
+    float m_gyroChallengeTimer = 0.0f;
+    float m_gyroChallengeZone = 0.15f;
+    float m_gyroStability = 0.0f;
+    static constexpr int kGyroTrailSize = 10;
+    float m_gyroTrailX[kGyroTrailSize] = {};
+    float m_gyroTrailY[kGyroTrailSize] = {};
+    int m_gyroTrailIndex = 0;
 
     SDL_Texture* m_arrowTexture = nullptr;
 };

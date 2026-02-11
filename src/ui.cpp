@@ -337,9 +337,6 @@ void UI::draw(bool& showDemo, Gamepad* gamepad)
                     m_gyroStatus = ok ? "Gyro updated" : "Failed to toggle gyro";
                 }
 
-                float rate = gamepad->gyroRate();
-                ImGui::Text("Rate: %.1f Hz", rate);
-
                 if (gamepad->gyroEnabled())
                 {
                     if (gamepad->getGyro(m_gyroData))
@@ -349,11 +346,160 @@ void UI::draw(bool& showDemo, Gamepad* gamepad)
                         float gz = m_gyroData[2] - m_gyroOffset[2];
                         float magnitude = std::sqrt((gx * gx) + (gy * gy) + (gz * gz));
 
-                        ImGui::SeparatorText("Live Data");
-                        ImGui::Text("X: %.3f", gx);
-                        ImGui::Text("Y: %.3f", gy);
-                        ImGui::Text("Z: %.3f", gz);
-                        ImGui::Text("Magnitude: %.3f", magnitude);
+                        float posX = gy * m_gyroSensitivity;
+                        float posY = gx * m_gyroSensitivity;
+                        
+                        if (posX < -1.0f) posX = -1.0f;
+                        if (posX > 1.0f) posX = 1.0f;
+                        if (posY < -1.0f) posY = -1.0f;
+                        if (posY > 1.0f) posY = 1.0f;
+
+                        m_gyroTrailX[m_gyroTrailIndex] = posX;
+                        m_gyroTrailY[m_gyroTrailIndex] = posY;
+                        m_gyroTrailIndex = (m_gyroTrailIndex + 1) % kGyroTrailSize;
+
+                        float distance = std::sqrt((posX * posX) + (posY * posY));
+                        m_gyroStability = 1.0f - (distance < 1.0f ? distance : 1.0f);
+
+                        if (ImGui::BeginTable("GyroLayout", 2, ImGuiTableFlags_SizingStretchProp))
+                        {
+                            ImGui::TableSetupColumn("Visual", ImGuiTableColumnFlags_WidthStretch, 0.6f);
+                            ImGui::TableSetupColumn("Info", ImGuiTableColumnFlags_WidthStretch, 0.4f);
+                            ImGui::TableNextRow();
+
+                            ImGui::TableNextColumn();
+                            ImGui::BeginChild("GyroVisual", ImVec2(320, 320), true);
+                            {
+                                ImVec2 canvas_pos = ImGui::GetCursorScreenPos();
+                                ImVec2 canvas_size = ImGui::GetContentRegionAvail();
+                                float boxSize = (canvas_size.x < canvas_size.y ? canvas_size.x : canvas_size.y) - 20.0f;
+                                ImVec2 center = ImVec2(canvas_pos.x + canvas_size.x * 0.5f, canvas_pos.y + canvas_size.y * 0.5f);
+                                float halfBox = boxSize * 0.5f;
+
+                                ImDrawList* draw = ImGui::GetWindowDrawList();
+                                
+                                draw->AddRectFilled(
+                                    ImVec2(center.x - halfBox, center.y - halfBox),
+                                    ImVec2(center.x + halfBox, center.y + halfBox),
+                                    ImColor(30, 30, 35), 8.0f);
+                                
+                                draw->AddRect(
+                                    ImVec2(center.x - halfBox, center.y - halfBox),
+                                    ImVec2(center.x + halfBox, center.y + halfBox),
+                                    ImColor(100, 100, 100), 8.0f, 0, 3.0f);
+
+                                if (m_gyroChallengeMode)
+                                {
+                                    float safeZoneRadius = halfBox * m_gyroChallengeZone;
+                                    draw->AddCircle(center, safeZoneRadius, ImColor(0, 255, 100, 100), 48, 2.0f);
+                                    
+                                    if (distance * halfBox <= safeZoneRadius)
+                                    {
+                                        draw->AddCircleFilled(center, safeZoneRadius, ImColor(0, 255, 100, 30));
+                                    }
+                                }
+
+                                for (int i = 0; i < kGyroTrailSize; i++)
+                                {
+                                    int idx = (m_gyroTrailIndex - i - 1 + kGyroTrailSize) % kGyroTrailSize;
+                                    float alpha = (1.0f - (i / (float)kGyroTrailSize)) * 0.5f;
+                                    ImVec2 trailPos = ImVec2(
+                                        center.x + m_gyroTrailX[idx] * halfBox,
+                                        center.y + m_gyroTrailY[idx] * halfBox
+                                    );
+                                    draw->AddCircleFilled(trailPos, 3.0f, ImColor(0.0f, 0.7f, 1.0f, alpha));
+                                }
+
+                                ImVec2 dotPos = ImVec2(center.x + posX * halfBox, center.y + posY * halfBox);
+                                draw->AddCircleFilled(dotPos, 12.0f, ImColor(0, 180, 255));
+                                draw->AddCircle(dotPos, 12.0f, ImColor(255, 255, 255), 16, 2.0f);
+                                
+                                draw->AddLine(center, dotPos, ImColor(150, 150, 150, 100), 1.5f);
+
+                                draw->AddLine(
+                                    ImVec2(center.x - halfBox, center.y),
+                                    ImVec2(center.x + halfBox, center.y),
+                                    ImColor(80, 80, 80), 1.0f);
+                                draw->AddLine(
+                                    ImVec2(center.x, center.y - halfBox),
+                                    ImVec2(center.x, center.y + halfBox),
+                                    ImColor(80, 80, 80), 1.0f);
+
+                                ImGui::SetCursorScreenPos(ImVec2(canvas_pos.x + 5, canvas_pos.y + 5));
+                                ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), "Tilt Visualization");
+                            }
+                            ImGui::EndChild();
+
+                            ImGui::TableNextColumn();
+                            ImGui::BeginChild("GyroInfo", ImVec2(0, 320), true);
+                            {
+                                ImGui::SeparatorText("Data");
+                                ImGui::Text("X: %.3f", gx);
+                                ImGui::Text("Y: %.3f", gy);
+                                ImGui::Text("Z: %.3f", gz);
+                                ImGui::Text("Magnitude: %.2f", magnitude);
+                                
+                                ImGui::Spacing();
+                                ImGui::SeparatorText("Stability");
+                                ImGui::ProgressBar(m_gyroStability, ImVec2(-1, 0));
+                                
+                                if (m_gyroChallengeMode)
+                                {
+                                    ImGui::Spacing();
+                                    ImGui::SeparatorText("Challenge");
+                                    m_gyroChallengeTimer += ImGui::GetIO().DeltaTime;
+                                    float dist = std::sqrt((posX * posX) + (posY * posY));
+                                    bool inZone = dist <= m_gyroChallengeZone;
+                                    
+                                    if (inZone)
+                                    {
+                                        ImGui::TextColored(ImVec4(0.0f, 1.0f, 0.3f, 1.0f), "HOLD STEADY!");
+                                    }
+                                    else
+                                    {
+                                        ImGui::TextColored(ImVec4(1.0f, 0.3f, 0.0f, 1.0f), "OUT OF ZONE");
+                                    }
+                                    ImGui::Text("Time: %.1fs", m_gyroChallengeTimer);
+                                }
+
+                                ImGui::Spacing();
+                                ImGui::SeparatorText("Settings");
+                                ImGui::SliderFloat("Sensitivity", &m_gyroSensitivity, 0.5f, 3.0f, "%.1f");
+                                
+                                if (m_gyroChallengeMode)
+                                {
+                                    ImGui::SliderFloat("Zone Size", &m_gyroChallengeZone, 0.1f, 0.5f, "%.2f");
+                                }
+                            }
+                            ImGui::EndChild();
+
+                            ImGui::EndTable();
+                        }
+
+                        ImGui::Spacing();
+                        if (ImGui::Button(m_gyroChallengeMode ? "Stop Challenge" : "Start Challenge"))
+                        {
+                            m_gyroChallengeMode = !m_gyroChallengeMode;
+                            m_gyroChallengeTimer = 0.0f;
+                        }
+                        ImGui::SameLine();
+                        if (ImGui::Button("Zero Offset"))
+                        {
+                            if (gamepad->getGyro(m_gyroOffset))
+                            {
+                                m_gyroStatus = "Offset saved";
+                                m_gyroTrailIndex = 0;
+                            }
+                        }
+                        ImGui::SameLine();
+                        if (ImGui::Button("Reset Offset"))
+                        {
+                            m_gyroOffset[0] = 0.0f;
+                            m_gyroOffset[1] = 0.0f;
+                            m_gyroOffset[2] = 0.0f;
+                            m_gyroStatus = "Offset cleared";
+                            m_gyroTrailIndex = 0;
+                        }
                     }
                     else
                     {
@@ -363,22 +509,6 @@ void UI::draw(bool& showDemo, Gamepad* gamepad)
                 else
                 {
                     ImGui::TextDisabled("Gyro is disabled.");
-                }
-
-                if (ImGui::Button("Zero Offset"))
-                {
-                    if (gamepad->getGyro(m_gyroOffset))
-                    {
-                        m_gyroStatus = "Offset saved";
-                    }
-                }
-                ImGui::SameLine();
-                if (ImGui::Button("Reset Offset"))
-                {
-                    m_gyroOffset[0] = 0.0f;
-                    m_gyroOffset[1] = 0.0f;
-                    m_gyroOffset[2] = 0.0f;
-                    m_gyroStatus = "Offset cleared";
                 }
             }
 
@@ -391,6 +521,7 @@ void UI::draw(bool& showDemo, Gamepad* gamepad)
             if (ImGui::Button("Close"))
             {
                 m_showGyroModal = false;
+                m_gyroChallengeMode = false;
                 ImGui::CloseCurrentPopup();
             }
 
