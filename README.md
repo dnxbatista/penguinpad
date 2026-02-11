@@ -23,7 +23,7 @@ A lightweight and efficient tool to test gamepad inputs, developed in C++.
 If you just want to use PenguinPad, simply download the latest portable executable from the [Releases](https://github.com/dnxbatista/penguinpad/releases) page:
 
 1. Go to [PenguinPad Releases](https://github.com/dnxbatista/penguinpad/releases)
-2. Download `penguinpad-portable.zip`
+2. Download `pp-release-xx.zip`
 3. Extract the ZIP file
 4. Run `penguinpad.exe`
 
