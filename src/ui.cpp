@@ -6,6 +6,7 @@
 #include <sstream>
 #include <format>
 #include <cstdint>
+#include <iostream>
 
 std::string getGamepadType(SDL_GamepadType gamepadType);
 std::string floatToString(float value);
@@ -537,10 +538,53 @@ void UI::drawContent(Gamepad& gamepad)
 
             float dpadX = visualPos.x + visualWidth * 0.15f;
             float dpadY = topY + 330;
-            drawCircleBtn(ImVec2(dpadX, dpadY - 30), "U", SDL_GAMEPAD_BUTTON_DPAD_UP, ImColor(120, 120, 120));
-            drawCircleBtn(ImVec2(dpadX, dpadY + 30), "D", SDL_GAMEPAD_BUTTON_DPAD_DOWN, ImColor(120, 120, 120));
-            drawCircleBtn(ImVec2(dpadX - 30, dpadY), "L", SDL_GAMEPAD_BUTTON_DPAD_LEFT, ImColor(120, 120, 120));
-            drawCircleBtn(ImVec2(dpadX + 30, dpadY), "R", SDL_GAMEPAD_BUTTON_DPAD_RIGHT, ImColor(120, 120, 120));
+            
+            if (m_arrowTexture)
+            {
+                auto drawArrowBtn = [&](ImVec2 center, int btnIdx, float rotationDeg) {
+                    bool active = gamepadData.buttons[btnIdx];
+                    float size = 24.0f;
+                    float halfSize = size * 0.5f;
+                    
+                    ImColor tint = active ? ImColor(0, 180, 255) : ImColor(120, 120, 120);
+                    
+                    float angleRad = rotationDeg * 3.14159265f / 180.0f;
+                    float cosA = std::cos(angleRad);
+                    float sinA = std::sin(angleRad);
+                    
+                    ImVec2 corners[4] = {
+                        ImVec2(-halfSize, -halfSize),
+                        ImVec2( halfSize, -halfSize),
+                        ImVec2( halfSize,  halfSize),
+                        ImVec2(-halfSize,  halfSize)
+                    };
+                    
+                    for (int i = 0; i < 4; i++) {
+                        float rx = corners[i].x * cosA - corners[i].y * sinA;
+                        float ry = corners[i].x * sinA + corners[i].y * cosA;
+                        corners[i] = ImVec2(center.x + rx, center.y + ry);
+                    }
+                    
+                    visualDrawList->AddImageQuad(
+                        m_arrowTexture,
+                        corners[0], corners[1], corners[2], corners[3],
+                        ImVec2(0, 0), ImVec2(1, 0), ImVec2(1, 1), ImVec2(0, 1),
+                        ImGui::ColorConvertFloat4ToU32(ImVec4(tint.Value.x, tint.Value.y, tint.Value.z, tint.Value.w))
+                    );
+                };
+                
+                drawArrowBtn(ImVec2(dpadX, dpadY - 30), SDL_GAMEPAD_BUTTON_DPAD_UP, 0.0f);
+                drawArrowBtn(ImVec2(dpadX, dpadY + 30), SDL_GAMEPAD_BUTTON_DPAD_DOWN, 180.0f);
+                drawArrowBtn(ImVec2(dpadX - 30, dpadY), SDL_GAMEPAD_BUTTON_DPAD_LEFT, 270.0f);
+                drawArrowBtn(ImVec2(dpadX + 30, dpadY), SDL_GAMEPAD_BUTTON_DPAD_RIGHT, 90.0f);
+            }
+            else
+            {
+                drawCircleBtn(ImVec2(dpadX, dpadY - 30), "U", SDL_GAMEPAD_BUTTON_DPAD_UP, ImColor(120, 120, 120));
+                drawCircleBtn(ImVec2(dpadX, dpadY + 30), "D", SDL_GAMEPAD_BUTTON_DPAD_DOWN, ImColor(120, 120, 120));
+                drawCircleBtn(ImVec2(dpadX - 30, dpadY), "L", SDL_GAMEPAD_BUTTON_DPAD_LEFT, ImColor(120, 120, 120));
+                drawCircleBtn(ImVec2(dpadX + 30, dpadY), "R", SDL_GAMEPAD_BUTTON_DPAD_RIGHT, ImColor(120, 120, 120));
+            }
 
             float faceX = visualPos.x + visualWidth * 0.85f;
             float faceY = topY + 330;
@@ -616,6 +660,33 @@ std::string UI::floatToString(float value)
     std::stringstream ss;
     ss << value;
     return ss.str();
+}
+
+bool UI::loadTextures(SDL_Renderer* renderer)
+{
+    SDL_Surface* surface = SDL_LoadBMP("../assets/images/arrow.bmp");
+    if (!surface) {
+        std::cerr << "Failed to load arrow.png: " << SDL_GetError() << std::endl;
+        return false;
+    }
+
+    m_arrowTexture = SDL_CreateTextureFromSurface(renderer, surface);
+    SDL_DestroySurface(surface);
+
+    if (!m_arrowTexture) {
+        std::cerr << "Failed to create arrow texture: " << SDL_GetError() << std::endl;
+        return false;
+    }
+
+    return true;
+}
+
+void UI::cleanup()
+{
+    if (m_arrowTexture) {
+        SDL_DestroyTexture(m_arrowTexture);
+        m_arrowTexture = nullptr;
+    }
 }
 
 std::string getGamepadType(SDL_GamepadType gamepadType)

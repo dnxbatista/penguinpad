@@ -1,11 +1,14 @@
 #pragma once
 #include "gamepad.h"
+#include <SDL3/SDL.h>
 #include <string>
 class UI
 {
 public:
     void draw(bool& showDemo, Gamepad* gamepad);
     void applyModernTheme();
+    bool loadTextures(SDL_Renderer* renderer);
+    void cleanup();
 private:
     void contentManager(Gamepad& gamepad);
     void drawContent(Gamepad& gamepad); // Main Content
@@ -44,6 +47,8 @@ private:
     float m_gyroOffset[3] = { 0.0f, 0.0f, 0.0f };
     float m_gyroData[3] = { 0.0f, 0.0f, 0.0f };
     std::string m_gyroStatus;
+
+    SDL_Texture* m_arrowTexture = nullptr;
 };
 
 
