@@ -11,7 +11,7 @@ Be respectful, inclusive, and professional in all interactions.
 ### Reporting Bugs
 - Use the GitHub issue tracker
 - Include steps to reproduce, expected behavior, and actual behavior
-- Provide system information (OS, compiler version, SDL3 version)
+- Provide system information (Windows version, MSVC version)
 
 ### Suggesting Features
 - Open an issue with the "enhancement" label
@@ -59,9 +59,9 @@ See the [README.md](README.md) for build instructions.
 
 ## Testing
 
-- Test with multiple gamepad types if possible
-- Verify on Windows, Linux, and macOS (if available)
-- Check for memory leaks with valgrind or similar tools
+- Test with multiple gamepad types if possible (Xbox, PlayStation, Nintendo Switch, etc.)
+- Verify on Windows 10/11
+- Check for memory leaks with appropriate tools
 
 ## Questions?
 
