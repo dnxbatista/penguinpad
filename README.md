@@ -7,7 +7,6 @@
 A lightweight and efficient tool to test gamepad inputs, developed in C++.
 
 ![PenguinPad Screenshot](assets/images/screenshot.png)
-*Replace with actual screenshot*
 
 ## Features
 
@@ -50,7 +49,6 @@ cmake --build . --config Release
 2. Launch PenguinPad
 3. The interface will automatically detect your controller
 4. Press buttons and move sticks to see real-time feedback
-5. Press **F8** to toggle the ImGui demo window (for developers)
 
 ### Supported Controllers
 
