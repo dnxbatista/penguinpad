@@ -1043,3 +1043,27 @@ dkms.conf
 *.uf2
 # Raspberry Pi Pico disassembler file
 *.dis
+
+##### Project Specific
+# Build directories
+build/
+bin/
+lib/
+
+# IDE specific
+.vscode/
+.vs/
+.idea/
+
+# Generated version file
+include/version.h
+
+# ImGui config
+imgui.ini
+
+# Package files
+*.zip
+*.tar.gz
+*.deb
+*.rpm
+_CPack_Packages/

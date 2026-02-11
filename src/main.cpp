@@ -1,3 +1,11 @@
+/*
+ * PenguinPad - Lightweight Gamepad Testing Tool
+ * Copyright (c) 2026 PenguinPad Contributors
+ * 
+ * This software is provided under the MIT License.
+ * See LICENSE file for details.
+ */
+
 #include <iostream>
 #include "app.h"
 
