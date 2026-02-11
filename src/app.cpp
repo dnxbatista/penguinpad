@@ -11,6 +11,8 @@ App::App(const std::string& title, int width, int height)
 
 App::~App()
 {
+	m_ui.cleanup();
+
 	ImGui_ImplSDLRenderer3_Shutdown();
 	ImGui_ImplSDL3_Shutdown();
 	ImGui::DestroyContext();
@@ -46,6 +48,11 @@ bool App::init()
 	);
 
 	m_ui.applyModernTheme();
+
+	if (!m_ui.loadTextures(m_renderer))
+	{
+		std::cerr << "Warning: Failed to load UI textures" << std::endl;
+	}
 
 	if (font == nullptr)
 	{
