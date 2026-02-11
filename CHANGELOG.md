@@ -13,11 +13,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Analog stick and trigger visualization
 - SDL3 integration for modern hardware support
 - ImGui-based user interface
-- Cross-platform support (Windows, Linux, macOS)
+- Windows native GUI integration (no console window)
 
 ### Features
 - Lightweight and minimal resource footprint
 - Intuitive immediate-mode UI
 - Support for multiple simultaneous gamepads
+- Portable executable with bundled SDL3 runtime
 
 [1.0.0]: https://github.com/dnxbatista/penguinpad/releases/tag/v1.0.0

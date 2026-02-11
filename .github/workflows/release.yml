@@ -27,32 +27,10 @@ jobs:
 
   build-and-upload:
     needs: create-release
-    strategy:
-      matrix:
-        include:
-          - os: windows-latest
-            artifact_name: penguinpad.exe
-            asset_name: penguinpad-windows-x64.exe
-            build_dir: build/bin/Release
-          - os: ubuntu-latest
-            artifact_name: penguinpad
-            asset_name: penguinpad-linux-x64
-            build_dir: build/bin
-          - os: macos-latest
-            artifact_name: penguinpad
-            asset_name: penguinpad-macos-x64
-            build_dir: build/bin
-    
-    runs-on: ${{ matrix.os }}
+    runs-on: windows-latest
     
     steps:
       - uses: actions/checkout@v4
-      
-      - name: Install Linux dependencies
-        if: matrix.os == 'ubuntu-latest'
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y build-essential cmake libx11-dev libxrandr-dev libxcursor-dev libxi-dev
       
       - name: Configure CMake
         run: cmake -B build -DCMAKE_BUILD_TYPE=Release
@@ -60,12 +38,27 @@ jobs:
       - name: Build
         run: cmake --build build --config Release
       
-      - name: Upload Release Asset
+      - name: Upload Release Asset (Executable)
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ needs.create-release.outputs.upload_url }}
-          asset_path: ./${{ matrix.build_dir }}/${{ matrix.artifact_name }}
-          asset_name: ${{ matrix.asset_name }}
+          asset_path: ./build/bin/Release/penguinpad.exe
+          asset_name: penguinpad-windows-x64.exe
           asset_content_type: application/octet-stream
+      
+      - name: Create Portable ZIP
+        run: |
+          cd build/bin/Release
+          7z a penguinpad-portable.zip penguinpad.exe SDL3.dll
+      
+      - name: Upload Release Asset (Portable ZIP)
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ needs.create-release.outputs.upload_url }}
+          asset_path: ./build/bin/Release/penguinpad-portable.zip
+          asset_name: penguinpad-portable.zip
+          asset_content_type: application/zip

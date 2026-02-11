@@ -6,10 +6,11 @@
  * See LICENSE file for details.
  */
 
+#include <windows.h>
 #include <iostream>
 #include "app.h"
 
-int main(int, char**)
+int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
 {
 	App myApp("penguinpad", 1280, 720);
 

@@ -15,14 +15,14 @@ A lightweight and efficient tool to test gamepad inputs, developed in C++.
 - 🎮 **Visual Mapping** - Visualize buttons, analog sticks (axes), and triggers through an intuitive UI
 - ⚡ **SDL3 Support** - Leverages the latest hardware management improvements from SDL3
 - 🚀 **High Performance** - Minimal resource footprint thanks to ImGui's immediate mode rendering
-- 🖥️ **Cross-Platform** - Works on Windows, Linux, and macOS
+- 🪟 **Windows Native** - Optimized for Windows with native GUI integration
 
 ## Getting Started
 
 ### Prerequisites
 
 Ensure you have the following installed on your system:
-- **C++ Compiler**: GCC 11+, Clang 14+, or MSVC 2019+
+- **C++ Compiler**: MSVC 2019+ (Visual Studio 2019 or newer)
 - **CMake**: Version 3.24 or higher
 - **Git**: For cloning the repository
 
@@ -40,26 +40,8 @@ mkdir build && cd build
 cmake ..
 cmake --build . --config Release
 
-# Run (Windows)
+# Run
 ./Release/penguinpad.exe
-
-# Run (Linux/macOS)
-./penguinpad
-```
-
-### Build Options
-
-```bash
-# Debug build
-cmake .. -DCMAKE_BUILD_TYPE=Debug
-cmake --build .
-
-# Release with optimizations
-cmake .. -DCMAKE_BUILD_TYPE=Release
-cmake --build .
-
-# Install to system (optional)
-sudo cmake --install .
 ```
 
 ## Usage
@@ -77,39 +59,6 @@ PenguinPad supports any controller recognized by SDL3, including:
 - PlayStation Controllers (DualSense, DualShock 4)
 - Nintendo Switch Pro Controller
 - Generic USB/Bluetooth gamepads
-
-## Building from Source
-
-### Windows (Visual Studio)
-
-```bash
-cmake -B build -G "Visual Studio 17 2022"
-cmake --build build --config Release
-```
-
-### Linux
-
-```bash
-# Install dependencies (Ubuntu/Debian)
-sudo apt-get install build-essential cmake git
-
-# Build
-mkdir build && cd build
-cmake .. -DCMAKE_BUILD_TYPE=Release
-make -j$(nproc)
-```
-
-### macOS
-
-```bash
-# Install dependencies
-brew install cmake
-
-# Build
-mkdir build && cd build
-cmake .. -DCMAKE_BUILD_TYPE=Release
-make -j$(sysctl -n hw.ncpu)
-```
 
 ## Contributing
 

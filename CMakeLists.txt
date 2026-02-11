@@ -1,4 +1,10 @@
 cmake_minimum_required(VERSION 3.24)
+
+# Windows-only project
+if(NOT WIN32)
+    message(FATAL_ERROR "PenguinPad is a Windows-only application")
+endif()
+
 project(penguinpad 
     VERSION 1.0.0
     DESCRIPTION "Lightweight gamepad input testing tool"
@@ -46,19 +52,17 @@ set(IMGUI_SOURCES
 
 file(GLOB_RECURSE MY_CODE "src/*.cpp")
 
-# Add Windows icon resource (only if icon.ico exists)
-if(WIN32)
-    set(ICON_FILE "${CMAKE_CURRENT_SOURCE_DIR}/assets/windows/icon.ico")
-    if(EXISTS ${ICON_FILE})
-        set(RESOURCE_FILE "${CMAKE_CURRENT_SOURCE_DIR}/assets/windows/penguinpad.rc")
-        set(ICON_RESOURCE ${RESOURCE_FILE})
-        message(STATUS "Building with Windows icon")
-    else()
-        message(STATUS "Building without icon (icon.ico not found)")
-    endif()
+# Add Windows icon resource
+set(ICON_FILE "${CMAKE_CURRENT_SOURCE_DIR}/assets/windows/icon.ico")
+if(EXISTS ${ICON_FILE})
+    set(RESOURCE_FILE "${CMAKE_CURRENT_SOURCE_DIR}/assets/windows/penguinpad.rc")
+    set(ICON_RESOURCE ${RESOURCE_FILE})
+    message(STATUS "Building with Windows icon")
+else()
+    message(STATUS "Building without icon (icon.ico not found)")
 endif()
 
-add_executable(${PROJECT_NAME} ${MY_CODE} ${IMGUI_SOURCES} ${ICON_RESOURCE})
+add_executable(${PROJECT_NAME} WIN32 ${MY_CODE} ${IMGUI_SOURCES} ${ICON_RESOURCE})
 
 target_include_directories(${PROJECT_NAME} PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/include
@@ -79,11 +83,7 @@ add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
 )
 
 # Compiler warnings for code quality
-if(MSVC)
-    target_compile_options(${PROJECT_NAME} PRIVATE /W4)
-else()
-    target_compile_options(${PROJECT_NAME} PRIVATE -Wall -Wextra -Wpedantic)
-endif()
+target_compile_options(${PROJECT_NAME} PRIVATE /W4)
 
 # Version information
 configure_file(
@@ -116,12 +116,7 @@ set(CPACK_PACKAGE_INSTALL_DIRECTORY "PenguinPad")
 set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/LICENSE")
 set(CPACK_RESOURCE_FILE_README "${CMAKE_CURRENT_SOURCE_DIR}/README.md")
 
-if(WIN32)
-    set(CPACK_GENERATOR "ZIP;NSIS")
-elseif(APPLE)
-    set(CPACK_GENERATOR "DragNDrop")
-else()
-    set(CPACK_GENERATOR "TGZ;DEB")
-endif()
+# Windows-only generators
+set(CPACK_GENERATOR "ZIP;NSIS")
 
 include(CPack)
