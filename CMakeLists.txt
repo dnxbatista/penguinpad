@@ -83,7 +83,11 @@ add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
 )
 
 # Compiler warnings for code quality
-target_compile_options(${PROJECT_NAME} PRIVATE /W4)
+if(MSVC)
+    target_compile_options(${PROJECT_NAME} PRIVATE /W4)
+else()
+    target_compile_options(${PROJECT_NAME} PRIVATE -Wall -Wextra -pedantic)
+endif()
 
 # Version information
 configure_file(
